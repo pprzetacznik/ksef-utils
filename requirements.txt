@@ -1,0 +1,5 @@
+requests
+pytest
+Jinja2
+pycryptodome
+lxml

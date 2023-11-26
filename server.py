@@ -1,9 +1,11 @@
-from utils import render_init_session
+import json
+import base64
+import hashlib
 import requests
 from utils import (
+    render_template,
     encrypt,
     iso_to_milliseconds,
-    round_to_nearest_thousand,
 )
 
 
@@ -12,7 +14,7 @@ class KSEFServer:
         self.config = config
 
     def init_token(self, **kwargs):
-        rendered_template = render_init_session(**kwargs)
+        rendered_template = render_template("InitSession.xml", **kwargs)
         print(rendered_template)
         s = requests.Session()
         response = s.post(
@@ -102,6 +104,88 @@ class KSEFServer:
             },
         )
         return response.json()
+
+    def get_invoice_status(self, reference_number: str, session_token: str):
+        headers = {
+            "accept": "application/json",
+            "SessionToken": session_token,
+            "Content-Type": "application/json",
+        }
+        url = f"{self.config.URL}/api/online/Invoice/Status/{reference_number}"
+        response = requests.get(url, headers=headers)
+        return response
+
+    def get_invoice(self, reference_number: str, session_token: str):
+        headers = {
+            "accept": "application/octet-stream",
+            "SessionToken": session_token,
+        }
+        url = f"{self.config.URL}/api/online/Invoice/Get/{reference_number}"
+        response = requests.get(url, headers=headers)
+        return response
+
+    def send_invoice(self, data: dict, session_token: str):
+        url = f"{self.config.URL}/api/online/Invoice/Send"
+        headers = {
+            "accept": "application/json",
+            "SessionToken": session_token,
+            "Content-Type": "application/json",
+        }
+        response = requests.put(url, data=json.dumps(data), headers=headers)
+        return response
+
+
+class KSEFService:
+    def __init__(self, server: KSEFServer):
+        self.server = server
+
+    def init_session(self):
+        response_json = self.server.authorization_challenge()
+        challenge = response_json.get("challenge")
+        encrypted_token = KSEFUtils.get_encrypted_token(
+            response_json,
+            self.server.config.PUBLIC_KEY,
+            self.server.config.KSEF_TOKEN,
+        )
+        response = self.server.init_token(
+            challenge=challenge,
+            token=encrypted_token,
+            nip=self.server.config.KSEF_NIP,
+        )
+        self.init_token = response.json().get("sessionToken").get("token")
+        self.init_token_all = response.json()
+        return self.init_token
+
+    def send_invoice(self, **kwargs):
+        invoice = render_template("invoice_example.xml", **kwargs)
+        print(invoice)
+        invoice_hash = {
+            "fileSize": len(invoice),
+            "hashSHA": {
+                "algorithm": "SHA-256",
+                "encoding": "Base64",
+                "value": base64.b64encode(
+                    hashlib.sha256(invoice.encode("utf-8")).digest()
+                ).decode("utf-8"),
+            },
+        }
+        invoice_payload = {
+            "invoiceBody": base64.b64encode(invoice.encode("utf-8")).decode(
+                "utf-8"
+            ),
+            "type": "plain",
+        }
+        data = {"invoiceHash": invoice_hash, "invoicePayload": invoice_payload}
+        return self.server.send_invoice(data, self.init_token)
+
+    def get_invoice_status(self, reference_number: str):
+        return self.server.get_invoice_status(
+            reference_number, self.init_token
+        )
+
+    def get_invoice(self, reference_number: str) -> str:
+        response = self.server.get_invoice(reference_number, self.init_token)
+        return response.text
 
 
 class KSEFUtils:

@@ -2,6 +2,15 @@ from datetime import datetime, timezone
 import base64
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
+from jinja2 import (
+    Environment,
+    FileSystemLoader,
+)
+
+
+def readfile(filename):
+    with open(filename) as f:
+        return f.read()
 
 
 def encrypt(public_key_str, token, timestamp: int):
@@ -9,12 +18,10 @@ def encrypt(public_key_str, token, timestamp: int):
     e = public_key.e
     n = public_key.n
     pubkey = RSA.construct((n, e))
-
     text = f"{token}|{timestamp}"
     print(f"text: {text}")
     cipher = PKCS1_v1_5.new(pubkey)
     encrypted_text = cipher.encrypt(bytes(text, encoding="utf-8"))
-
     return base64.b64encode(encrypted_text).decode("utf-8")
 
 
@@ -26,23 +33,10 @@ def iso_to_milliseconds(timestamp: str) -> int:
     epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
     delta = dt_obj - epoch
     milliseconds = int(delta.total_seconds() * 1000)
-
     return milliseconds
 
 
-def round_to_nearest_thousand(milliseconds: int) -> int:
-    return round(milliseconds / 1000) * 1000
-
-
-def render_init_session(**kwargs):
-    from jinja2 import (
-        Environment,
-        PackageLoader,
-        select_autoescape,
-        FileSystemLoader,
-    )
-    from os.path import join
-
+def render_template(template_name, **kwargs):
     env = Environment(loader=FileSystemLoader("templates"), autoescape=False)
-    template = env.get_template("InitSession.xml")
+    template = env.get_template(template_name)
     return template.render(**kwargs)
