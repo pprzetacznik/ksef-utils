@@ -16,8 +16,7 @@ class KSEFServer:
     def init_token(self, **kwargs):
         rendered_template = render_template("InitSession.xml", **kwargs)
         print(rendered_template)
-        s = requests.Session()
-        response = s.post(
+        response = requests.post(
             f"{self.config.URL}/api/online/Session/InitToken",
             data=rendered_template,
             headers={
@@ -27,10 +26,15 @@ class KSEFServer:
         )
         return response
 
-    def get_status(self):
-        s = requests.Session()
-        response = s.get(
+    def get_status(self, session_token):
+        headers = {
+            "accept": "application/json",
+            "SessionToken": session_token,
+            "Content-Type": "application/json",
+        }
+        response = requests.get(
             f"{self.config.URL}/api/online/Session/Status?PageSize=10&PageOffset=0&IncludeDetails=false",
+            headers=headers,
         )
         return response
 
@@ -41,8 +45,7 @@ class KSEFServer:
                 "identifier": self.config.KSEF_NIP,
             }
         }
-        s = requests.Session()
-        response = s.post(
+        response = requests.post(
             f"{self.config.URL}/api/online/Session/AuthorisationChallenge?PageSize=10&PageOffset=0&IncludeDetails=false",
             json=data,
         )
@@ -51,26 +54,29 @@ class KSEFServer:
         print(dir(response))
         print(response.text)
         print(response.reason)
-
-        # challenge = response.json.get("challenge")
-        # print(f"challenge: {challenge}")
-        # print(response.json["challenge"])
         response_json = response.json()
         return response_json
 
-    def get_invoices(self):
+    def get_invoices(self, session_token):
         data = {
             "queryCriteria": {
                 "subjectType": "subject1",
                 "type": "incremental",
-                "acquisitionTimestampThresholdFrom": "2023-10-22T00:00:00+00:00",
-                "acquisitionTimestampThresholdTo": "2023-10-22T23:59:59+00:00",
+                "acquisitionTimestampThresholdFrom": "2023-11-26T00:00:00+00:00",
+                "acquisitionTimestampThresholdTo": "2023-11-26T23:59:59+00:00",
+                # "invoicingDateFrom": "2023-10-22T00:00:00+00:00",
+                # "invoicingDateTo": "2023-11-27T23:59:59+00:00",
             }
         }
-        s = requests.Session()
-        response = s.post(
+        headers = {
+            "accept": "application/json",
+            "SessionToken": session_token,
+            "Content-Type": "application/json",
+        }
+        response = requests.post(
             f"{self.config.URL}/api/online/Query/Invoice/Sync?PageSize=10&PageOffset=0",
             json=data,
+            headers=headers,
         )
         return response
 
@@ -94,8 +100,7 @@ class KSEFServer:
                 "description": "token_to_grant_acess",
             }
         }
-        s = requests.Session()
-        response = s.post(
+        response = requests.post(
             f"{self.config.URL}/api/online/Credentials/GenerateToken",
             json=data,
             headers={
@@ -142,6 +147,11 @@ class KSEFService:
     def init_session(self):
         response_json = self.server.authorization_challenge()
         challenge = response_json.get("challenge")
+        if not challenge:
+            print(json.dumps(response_json, indent=4))
+            raise Exception(
+                response_json.get("exception").get("exceptionDetailList")
+            )
         encrypted_token = KSEFUtils.get_encrypted_token(
             response_json,
             self.server.config.PUBLIC_KEY,

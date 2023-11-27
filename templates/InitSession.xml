@@ -6,7 +6,7 @@
 	<ns3:Context>
 		<Challenge>{{ challenge }}</Challenge>
 		<Identifier xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns2:SubjectIdentifierByCompanyType">
-				<ns2:Identifier>{{ nip }}</ns2:Identifier>
+      <ns2:Identifier>{{ nip }}</ns2:Identifier>
 		</Identifier>
 		<DocumentType>
 			<ns2:Service>KSeF</ns2:Service>

@@ -27,22 +27,19 @@ def service(server):
     return KSEFService(server)
 
 
-@mark.skip
-def test_get_invoice(server, config):
-    response = server.get_invoices()
-    print(response.json)
-    print(dir(response))
-    print(response.text)
-    print(response.reason)
+# @mark.skip
+def test_get_invoice(server, service, config):
+    response = service.init_session()
+    response = server.get_invoices(service.init_token)
+    print(dumps(response.json(), indent=4))
+    print(response.status_code)
 
 
 @mark.skip
-def test_get_session(server, config):
-    response = server.get_status()
-    print(response.json)
-    print(dir(response))
-    print(response.text)
-    print(response.reason)
+def test_get_session(service, server, config):
+    response = service.init_session()
+    response = server.get_status(service.init_token)
+    print(dumps(response.json(), indent=4))
 
 
 @mark.skip
@@ -57,6 +54,7 @@ def test_init_session(config, service):
     print(dumps(response, indent=4))
 
 
+@mark.skip
 def test_send_invoice(config, service):
     response = service.init_session()
     print(dumps(response, indent=4))
