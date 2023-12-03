@@ -29,3 +29,11 @@ export KSEF_NIP="..."
 /openapi/gtw/svc/api/KSeF-online.yaml
 ```
 
+## Marks
+
+Run all e2e/functional/current tests
+```
+$ pytest -svvv test_ksef.py -m e2e
+$ pytest -svvv test_ksef.py -m functional
+$ pytest -svvv test_ksef.py -m current
+```
