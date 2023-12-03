@@ -33,7 +33,7 @@ export KSEF_NIP="..."
 
 Run all e2e/functional/current tests
 ```
-$ pytest -svvv test_ksef.py -m e2e
-$ pytest -svvv test_ksef.py -m functional
-$ pytest -svvv test_ksef.py -m current
+$ pytest -svvv test_ksef.py -m "e2e and not ignore"
+$ pytest -svvv test_ksef.py -m "functional and not ignore"
+$ pytest -svvv test_ksef.py -m "current and not ignore"
 ```

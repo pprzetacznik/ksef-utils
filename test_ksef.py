@@ -1,34 +1,10 @@
 from time import sleep
 from json import dumps
-from os import getenv
-from pytest import fixture, mark
-from server import KSEFServer, KSEFService
-from config import TestConfig, DemoConfig, ProdConfig
+from pytest import mark
 
 
-@fixture
-def config():
-    env = getenv("KSEF_ENV", "test")
-    config_dict = {
-        "test": TestConfig,
-        "demo": DemoConfig,
-        "prod": ProdConfig,
-    }
-    return config_dict[env]()
-
-
-@fixture
-def server(config):
-    return KSEFServer(config)
-
-
-@fixture
-def service(server):
-    return KSEFService(server)
-
-
-@mark.functional
 @mark.current
+@mark.functional
 def test_get_invoice(server, service, config):
     response = service.init_session()
     response = server.get_invoices(service.init_token)
