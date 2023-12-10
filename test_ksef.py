@@ -7,6 +7,7 @@ from pytest import mark
 @mark.functional
 def test_get_invoice(server, service, config):
     response = service.init_session()
+    service.wait_until_logged()
     response = server.get_invoices(service.init_token)
     print(dumps(response.json(), indent=4))
     print(response.status_code)

@@ -1,3 +1,4 @@
+from time import sleep
 import json
 import base64
 import hashlib
@@ -33,7 +34,7 @@ class KSEFServer:
             "Content-Type": "application/json",
         }
         response = requests.get(
-            f"{self.config.URL}/api/online/Session/Status?PageSize=10&PageOffset=0&IncludeDetails=false",
+            f"{self.config.URL}/api/online/Session/Status?PageSize=10&PageOffset=0&IncludeDetails=true",
             headers=headers,
         )
         return response
@@ -62,10 +63,10 @@ class KSEFServer:
             "queryCriteria": {
                 "subjectType": "subject1",
                 "type": "incremental",
-                "acquisitionTimestampThresholdFrom": "2023-11-26T00:00:00+00:00",
-                "acquisitionTimestampThresholdTo": "2023-11-26T23:59:59+00:00",
-                # "invoicingDateFrom": "2023-10-22T00:00:00+00:00",
-                # "invoicingDateTo": "2023-11-27T23:59:59+00:00",
+                "acquisitionTimestampThresholdFrom": "2023-12-05T19:00:00+00:00",
+                "acquisitionTimestampThresholdTo": "2023-12-05T20:59:59+00:00",
+                # "invoicingDateFrom": "2023-12-04T00:00:00+00:00",
+                # "invoicingDateTo": "2023-12-04T23:59:59+00:00",
             }
         }
         headers = {
@@ -165,6 +166,15 @@ class KSEFService:
         self.init_token = response.json().get("sessionToken").get("token")
         self.init_token_all = response.json()
         return self.init_token
+
+    def wait_until_logged(self):
+        logged = False
+        while not logged:
+            response = self.server.get_status(self.init_token)
+            print(json.dumps(response.json(), indent=4))
+            if response.json().get("processingCode") == 310:
+                logged = True
+            sleep(1)
 
     def send_invoice(self, **kwargs):
         invoice = render_template("invoice_example.xml", **kwargs)
