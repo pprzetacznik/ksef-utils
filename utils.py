@@ -6,6 +6,7 @@ from jinja2 import (
     Environment,
     FileSystemLoader,
 )
+import xml.dom.minidom
 
 
 def readfile(filename):
@@ -40,3 +41,7 @@ def render_template(template_name, **kwargs):
     env = Environment(loader=FileSystemLoader("templates"), autoescape=False)
     template = env.get_template(template_name)
     return template.render(**kwargs)
+
+
+def format_xml(input_string):
+    return xml.dom.minidom.parseString(input_string).toprettyxml(indent="  ")

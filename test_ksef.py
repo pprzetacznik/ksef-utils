@@ -1,6 +1,7 @@
 from time import sleep
 from json import dumps
 from pytest import mark
+from utils import format_xml
 
 
 @mark.current
@@ -11,6 +12,12 @@ def test_get_invoice(server, service, config):
     response = server.get_invoices(service.init_token)
     print(dumps(response.json(), indent=4))
     print(response.status_code)
+    invoices = response.json().get("invoiceHeaderList")
+    if invoices:
+        last_invoice_id = invoices[0].get("ksefReferenceNumber")
+        print(last_invoice_id)
+        invoice = service.get_invoice(last_invoice_id)
+        print(format_xml(invoice))
 
 
 @mark.functional

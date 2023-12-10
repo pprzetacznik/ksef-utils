@@ -1,4 +1,5 @@
 from time import sleep
+from datetime import datetime
 import json
 import base64
 import hashlib
@@ -58,13 +59,29 @@ class KSEFServer:
         response_json = response.json()
         return response_json
 
-    def get_invoices(self, session_token):
+    def get_invoices(self, session_token, from_date=None, to_date=None):
+        if not from_date:
+            from_date = datetime(
+                datetime.now().year,
+                datetime.now().month,
+                1,
+                tzinfo=self.config.TIMEZONE,
+            )
+        if not to_date:
+            to_date = datetime.now()
+        date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+        from_string = from_date.strftime(date_format)
+        from_string = from_date.isoformat(timespec="milliseconds")
+        to_string = to_date.strftime(date_format)
+        to_string = datetime.now(self.config.TIMEZONE).isoformat(
+            timespec="milliseconds"
+        )
         data = {
             "queryCriteria": {
                 "subjectType": "subject1",
                 "type": "incremental",
-                "acquisitionTimestampThresholdFrom": "2023-12-05T19:00:00+00:00",
-                "acquisitionTimestampThresholdTo": "2023-12-05T20:59:59+00:00",
+                "acquisitionTimestampThresholdFrom": from_string,
+                "acquisitionTimestampThresholdTo": to_string,
                 # "invoicingDateFrom": "2023-12-04T00:00:00+00:00",
                 # "invoicingDateTo": "2023-12-04T23:59:59+00:00",
             }

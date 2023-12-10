@@ -16,7 +16,6 @@ Log in to https://ksef-test.mf.gov.pl/web/ and generate your individual `KSEF_TO
 #!/bin/bash
 
 export KSEF_ENV="test"
-export KSEF_SESSION="..."
 export KSEF_TOKEN="..."
 export KSEF_NIP="..."
 ```
