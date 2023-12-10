@@ -1,6 +1,7 @@
+from datetime import datetime
 from time import sleep
 from json import dumps
-from pytest import mark
+from pytest import mark, fixture
 from utils import format_xml
 
 
@@ -39,28 +40,36 @@ def test_init_session(config, service):
     print(dumps(response, indent=4))
 
 
-@mark.functional
-@mark.e2e
-def test_send_invoice(config, service):
-    response = service.init_session()
-    print(dumps(response, indent=4))
-    response_send_invoice = service.send_invoice(
-        vendor1={
+@fixture
+def invoice_data(config):
+    creation_date = datetime.now(config.TIMEZONE).isoformat(
+        timespec="milliseconds"
+    )
+    return {
+        "vendor1": {
             "nip": config.KSEF_NIP,
             "name": "Markosoft-owner Krakow Sp.z o.o.",
             "address1": "ul. Bracka 11/12",
             "address2": "40-100 Krakow",
             "country_code": "PL",
         },
-        vendor2={
+        "vendor2": {
             "nip": 2222222222,
             "name": "Markosoft3 Krakow Sp.z o.o.",
             "address1": "ul. Bracka 11/12",
             "address2": "40-100 Krakow",
             "country_code": "PL",
         },
-        invoice={"creation_date": "2023-11-24T15:19:25Z"},
-    )
+        "invoice": {"creation_date": creation_date},
+    }
+
+
+@mark.functional
+@mark.e2e
+def test_send_invoice(config, service, invoice_data):
+    response = service.init_session()
+    print(dumps(response, indent=4))
+    response_send_invoice = service.send_invoice(**invoice_data)
     print(response_send_invoice.status_code)
     print(dumps(response_send_invoice.json(), indent=4))
 
