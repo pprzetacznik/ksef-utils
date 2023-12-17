@@ -60,7 +60,35 @@ def invoice_data(config):
             "address2": "40-100 Krakow",
             "country_code": "PL",
         },
-        "invoice": {"creation_date": creation_date},
+        "invoice": {
+            "creation_date": creation_date,
+            "currency": "PLN",
+            "type": "VAT",
+            "number": "FV-2023/12/10",
+            "location": "Kraków",
+            "date_of_sale": "2023-12-11",
+            "services": [
+                {
+                    "number": "1",
+                    "gross_value": "",
+                    "net_price": "100",
+                    "net_value": "200",
+                    "quantity": "2",
+                    "title": "Service",
+                    "vat": "23",
+                    "vat_value": "",
+                    "unit": "szt",
+                }
+            ],
+            "total_gross_value": "246",
+            "total_value": "200",
+            "total_vat_value": "46",
+            "payment": {
+                "due_date": "2023-12-20",
+                "description": "10 dni",
+                "form": 6,
+            },
+        },
     }
 
 
@@ -72,20 +100,9 @@ def test_send_invoice(config, service, invoice_data):
     response_send_invoice = service.send_invoice(**invoice_data)
     print(response_send_invoice.status_code)
     print(dumps(response_send_invoice.json(), indent=4))
-
     reference_number = response_send_invoice.json().get(
         "elementReferenceNumber"
     )
-    invoice_status = {}
-    while not invoice_status:
-        response = service.get_invoice_status(reference_number)
-        print(response.status_code)
-        print(dumps(response.json(), indent=4))
-        invoice_status = response.json().get("invoiceStatus")
-        if not invoice_status.get("ksefReferenceNumber"):
-            invoice_status = {}
-        if not invoice_status:
-            sleep(1)
-
+    invoice_status = service.wait_until_invoice(reference_number)
     invoice = service.get_invoice(invoice_status.get("ksefReferenceNumber"))
     print(invoice)

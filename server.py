@@ -193,24 +193,36 @@ class KSEFService:
     def send_invoice(self, **kwargs):
         invoice = render_template("invoice_example.xml", **kwargs)
         print(invoice)
+        invoice_encoded = invoice.encode("utf-8")
         invoice_hash = {
-            "fileSize": len(invoice),
+            "fileSize": len(invoice_encoded),
             "hashSHA": {
                 "algorithm": "SHA-256",
                 "encoding": "Base64",
                 "value": base64.b64encode(
-                    hashlib.sha256(invoice.encode("utf-8")).digest()
+                    hashlib.sha256(invoice_encoded).digest()
                 ).decode("utf-8"),
             },
         }
         invoice_payload = {
-            "invoiceBody": base64.b64encode(invoice.encode("utf-8")).decode(
-                "utf-8"
-            ),
+            "invoiceBody": base64.b64encode(invoice_encoded).decode("utf-8"),
             "type": "plain",
         }
         data = {"invoiceHash": invoice_hash, "invoicePayload": invoice_payload}
         return self.server.send_invoice(data, self.init_token)
+
+    def wait_until_invoice(self, reference_number):
+        invoice_status = {}
+        while not invoice_status:
+            response = self.get_invoice_status(reference_number)
+            print(response.status_code)
+            print(json.dumps(response.json(), indent=4))
+            invoice_status = response.json().get("invoiceStatus")
+            if not invoice_status.get("ksefReferenceNumber"):
+                invoice_status = {}
+            if not invoice_status:
+                sleep(1)
+        return invoice_status
 
     def get_invoice_status(self, reference_number: str):
         return self.server.get_invoice_status(

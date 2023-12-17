@@ -28,20 +28,13 @@
     </Adres>
   </Podmiot2>
   <Fa>
-    <KodWaluty>PLN</KodWaluty>
-    <P_1>2023-11-30</P_1>
-    <P_2>FV-2023/11/01</P_2>
-    <P_6>2023-08-31</P_6>
-    <P_13_1>0</P_13_1>
-    <P_14_1>0</P_14_1>
-    <P_13_2>241.77</P_13_2>
-    <P_14_2>19.34</P_14_2>
-    <P_13_3>0</P_13_3>
-    <P_14_3>0</P_14_3>
-    <P_13_4>0</P_13_4>
-    <P_14_4>0</P_14_4>
-    <P_13_5>0</P_13_5>
-    <P_15>261.11</P_15>
+    <KodWaluty>{{ invoice.currency }}</KodWaluty>
+    <P_1>{{ invoice.date_of_sale }}</P_1>
+    <P_1M>{{ invoice.location }}</P_1M>
+    <P_2>{{ invoice.number }}</P_2>
+    <P_13_1>{{ invoice.total_value }}</P_13_1>
+    <P_14_1>{{ invoice.total_vat_value }}</P_14_1>
+    <P_15>{{ invoice.total_gross_value }}</P_15>
     <Adnotacje>
       <P_16>2</P_16>
       <P_17>2</P_17>
@@ -58,26 +51,22 @@
         <P_PMarzyN>1</P_PMarzyN>
       </PMarzy>
     </Adnotacje>
-    <RodzajFaktury>VAT</RodzajFaktury>
-    <FP>1</FP>
-    <FaWiersz>
-      <NrWierszaFa>1</NrWierszaFa>
-      <PKWiU>PKWiU 08.11.30.0</PKWiU>
-      <P_8A>szt</P_8A>
-      <P_8B>1</P_8B>
-      <P_9A>241.77</P_9A>
-      <P_10>0</P_10>
-      <P_11>241.77</P_11>
-      <P_12>8</P_12>
-      <GTU>GTU_01</GTU>
-      <KursWaluty>2</KursWaluty>
-    </FaWiersz>
-    <WarunkiTransakcji>
-      <Zamowienia>
-        <NrZamowienia>1234567</NrZamowienia>
-      </Zamowienia>
-      <KursUmowny>0</KursUmowny>
-      <WalutaUmowna>PLN</WalutaUmowna>
-    </WarunkiTransakcji>
+    <RodzajFaktury>{{ invoice.type }}</RodzajFaktury>
+    {% for item in invoice.services %}<FaWiersz>
+      <NrWierszaFa>{{ item.number }}</NrWierszaFa>
+      <P_7>{{ item.title }}</P_7>
+      <P_8A>{{ item.unit }}</P_8A>
+      <P_8B>{{ item.quantity }}</P_8B>
+      <P_9A>{{ item.net_price }}</P_9A>
+      <P_11>{{ item.net_value }}</P_11>
+      <P_12>{{ item.vat }}</P_12>
+    </FaWiersz>{% endfor %}
+    <Platnosc>
+      <TerminPlatnosci>
+        <Termin>{{ invoice.payment.due_date }}</Termin>
+        <TerminOpis>{{ invoice.payment.description }}</TerminOpis>
+      </TerminPlatnosci>
+      <FormaPlatnosci>{{ invoice.payment.form }}</FormaPlatnosci>
+    </Platnosc>
   </Fa>
 </Faktura>
