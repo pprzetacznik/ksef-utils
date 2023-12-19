@@ -1,8 +1,7 @@
 from datetime import datetime
-from time import sleep
 from json import dumps
 from pytest import mark, fixture
-from utils import format_xml
+from ksef_utils.utils import format_xml
 
 
 @mark.current

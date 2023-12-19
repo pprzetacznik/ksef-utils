@@ -1,8 +1,8 @@
 import logging
 from os import getenv
 from pytest import fixture
-from server import KSEFServer, KSEFService
-from config import TestConfig, DemoConfig, ProdConfig
+from ksef_utils.server import KSEFServer, KSEFService
+from ksef_utils.config import TestConfig, DemoConfig, ProdConfig
 
 
 @fixture

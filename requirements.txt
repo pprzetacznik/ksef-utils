@@ -1,5 +1,6 @@
 requests
 pytest
+pytest-cov
 Jinja2
 pycryptodome
 lxml

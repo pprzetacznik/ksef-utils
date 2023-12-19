@@ -1,7 +1,7 @@
 from os import getenv
 from os.path import join
 import pytz
-from utils import readfile
+from ksef_utils.utils import readfile
 
 
 class Config:

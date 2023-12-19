@@ -1,0 +1,8 @@
+recursive-include resources *
+include templates/InitSession.xml
+include templates/invoice_example.xml
+include MANIFEST.in
+include README.md
+include LICENSE.txt
+include requirements.txt
+include pytest.ini

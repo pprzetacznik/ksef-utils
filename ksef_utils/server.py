@@ -4,7 +4,7 @@ import json
 import base64
 import hashlib
 import requests
-from utils import (
+from ksef_utils.utils import (
     render_template,
     encrypt,
     iso_to_milliseconds,

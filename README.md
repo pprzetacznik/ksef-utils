@@ -1,5 +1,12 @@
 # KSEF utils
 
+## Installing package from source
+
+```Bash
+$ cd ksef-utils
+$ pip install -e .
+```
+
 ## Run tests
 
 ```Bash
@@ -32,7 +39,8 @@ export KSEF_NIP="..."
 
 Run all e2e/functional/current tests
 ```
-$ pytest -svvv test_ksef.py -m "e2e and not ignore"
-$ pytest -svvv test_ksef.py -m "functional and not ignore"
-$ pytest -svvv test_ksef.py -m "current and not ignore"
+$ pytest -svvv tests/test_ksef.py -m "e2e and not ignore"
+$ pytest -svvv tests/test_ksef.py -m "functional and not ignore"
+$ pytest -svvv tests/test_ksef.py -m "current and not ignore"
+$ ./run_tests.sh
 ```
