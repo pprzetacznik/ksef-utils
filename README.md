@@ -1,21 +1,40 @@
-# KSEF utils
+# KSeF utils
 
-## Installing package from source
+[![PyPI version](https://badge.fury.io/py/ksef-utils.svg)](https://pypi.org/project/ksef-utils/)
+[![ksef-utils Release](https://github.com/pprzetacznik/ksef-utils/actions/workflows/release.yml/badge.svg)](https://github.com/pprzetacznik/ksef-utils/actions/workflows/release.yml)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ksef-utils)](https://pypi.org/project/ksef-utils/)
+
+This project contains utilities and example requests that can be helpful when integrating with Polish central invoicing system called [Krajowy System e-Faktur (KSeF)](https://www.podatki.gov.pl/ksef/).
+
+## Installation
+
+### Creating python virtual environment
+
+See [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/) documentation.
 
 ```Bash
-$ cd ksef-utils
-$ pip install -e .
+$ mkvirtualenv ksef
+$ workon ksef
+(ksef) $
+```
+
+### Installing package from source
+
+```Bash
+(ksef) $ git clone https://github.com/pprzetacznik/ksef-utils.git
+(ksef) $ cd ksef-utils
+(ksef) $ pip install -e .
+```
+
+### Installing package from PyPI
+
+```Bash
+(ksef) $ pip install ksef-utils
 ```
 
 ## Run tests
 
-```Bash
-$ mkvirtualenv ksef
-(ksef) $ pip install -r requirements.txt
-(ksef) $ pytest -svvv
-```
-
-## Set up secrets
+### Set up secrets
 
 Log in to https://ksef-test.mf.gov.pl/web/ and generate your individual `KSEF_TOKEN`.
 
@@ -27,6 +46,23 @@ export KSEF_TOKEN="..."
 export KSEF_NIP="..."
 ```
 
+### Run pytest framework
+
+```Bash
+(ksef) $ pip install -r requirements.txt
+(ksef) $ pytest -svvv
+```
+
+### Markers
+
+Run all e2e/functional/current tests
+```
+(ksef) $ pytest -svvv tests/test_ksef.py -m "e2e and not ignore"
+(ksef) $ pytest -svvv tests/test_ksef.py -m "functional and not ignore"
+(ksef) $ pytest -svvv tests/test_ksef.py -m "current and not ignore"
+(ksef) $ ./run_tests.sh
+```
+
 ## OpenAPI
 
 ```
@@ -35,12 +71,15 @@ export KSEF_NIP="..."
 /openapi/gtw/svc/api/KSeF-online.yaml
 ```
 
-## Marks
+## Publish new release
 
-Run all e2e/functional/current tests
 ```
-$ pytest -svvv tests/test_ksef.py -m "e2e and not ignore"
-$ pytest -svvv tests/test_ksef.py -m "functional and not ignore"
-$ pytest -svvv tests/test_ksef.py -m "current and not ignore"
-$ ./run_tests.sh
+$ git tag v1.0
+$ git push origin v1.0
 ```
+
+## KSEF references
+
+* https://www.podatki.gov.pl/ksef/
+* https://ksef-test.mf.gov.pl/web/
+* https://www.youtube.com/watch?v=dnBGO6IPtzA
