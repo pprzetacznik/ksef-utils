@@ -54,6 +54,13 @@ def invoice_data(config):
                 "email": "test.ksef-utils@test.speedwell.pl",
                 "phone": 12121212121212,
             },
+            "bank_account": {
+                "nr": "PL11111111111111111111111",
+                "swift": "KSEFTEST",
+                "bank_name": "KSeF Bank",
+                "description": "Business account",
+                "type": 1,
+            },
         },
         "vendor2": {
             "nip": 2222222239,

@@ -79,6 +79,15 @@
         <TerminOpis>{{ invoice.payment.description }}</TerminOpis>
       </TerminPlatnosci>
       <FormaPlatnosci>{{ invoice.payment.form }}</FormaPlatnosci>
+      {% if "bank_account" in vendor1 %}
+      <RachunekBankowy>
+        <NrRB>{{ vendor1.bank_account.nr }}</NrRB>
+        <SWIFT>{{ vendor1.bank_account.swift }}</SWIFT>
+        {% if "type" in vendor1.bank_account %}<RachunekWlasnyBanku>{{ vendor1.bank_account.type }}</RachunekWlasnyBanku>{% endif %}
+        <NazwaBanku>{{ vendor1.bank_account.bank_name }}</NazwaBanku>
+        {% if "description" in vendor1.bank_account %}<OpisRachunku>{{ vendor1.bank_account.description }}</OpisRachunku>{% endif %}
+      </RachunekBankowy>
+      {% endif %}
     </Platnosc>
   </Fa>
   <Stopka>
