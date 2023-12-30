@@ -52,6 +52,19 @@ class KSEFServer:
         )
         return response
 
+    def get_upo(self, session_token, reference_number):
+        headers = {
+            # "accept": "application/json",
+            "accept": "application/vnd.v3+json",
+            "SessionToken": session_token,
+            "Content-Type": "application/json",
+        }
+        response = requests.get(
+            f"{self.config.URL}/api/common/Status/{reference_number}",
+            headers=headers,
+        )
+        return response
+
     def authorization_challenge(self):
         data = {
             "contextIdentifier": {
@@ -70,6 +83,18 @@ class KSEFServer:
         print(response.reason)
         response_json = response.json()
         return response_json
+
+    def get_session_terminate(self, session_token):
+        headers = {
+            "accept": "application/json",
+            "SessionToken": session_token,
+            "Content-Type": "application/json",
+        }
+        response = requests.get(
+            f"{self.config.URL}/api/online/Session/Terminate",
+            headers=headers,
+        )
+        return response
 
     def get_invoices(self, session_token, from_date=None, to_date=None):
         if not from_date:
@@ -214,6 +239,10 @@ class KSEFService:
         self.init_token_all = response.json()
         return response
 
+    def session_terminate(self):
+        response = self.server.get_session_terminate(self.init_token)
+        return response.json()
+
     def wait_until_logged(self):
         logged = False
         while not logged:
@@ -265,6 +294,10 @@ class KSEFService:
     def get_invoice(self, reference_number: str) -> str:
         response = self.server.get_invoice(reference_number, self.init_token)
         return response.text
+
+    def get_upo(self, reference_number: str) -> str:
+        response = self.server.get_upo(self.init_token, reference_number)
+        return response.json()
 
 
 class KSEFUtils:

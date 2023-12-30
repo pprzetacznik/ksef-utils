@@ -69,4 +69,9 @@
       <FormaPlatnosci>{{ invoice.payment.form }}</FormaPlatnosci>
     </Platnosc>
   </Fa>
+  <Stopka>
+    <Informacje>
+      <StopkaFaktury>{{ invoice.footer_note }}</StopkaFaktury>
+    </Informacje>
+  </Stopka>
 </Faktura>

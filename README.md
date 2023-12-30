@@ -41,8 +41,8 @@ Log in to https://ksef-test.mf.gov.pl/web/ and generate your individual `KSEF_TO
 ```Bash
 #!/bin/bash
 
-export KSEF_ENV="test"
 export KSEF_TOKEN="..."
+export KSEF_ENV="test"
 export KSEF_NIP="..."
 export KSEF_SIGN_CERT_PATH="cert.pem"
 export KSEF_SIGN_KEY_PATH="privkey.pem"
@@ -59,8 +59,8 @@ openssl req -x509 \
   -subj "${KSEF_SUBJECT}" \
   -days 365 \
   -newkey rsa \
-  -keyout privkey.pem \
-  -out cert.pem
+  -keyout $KSEF_SIGN_KEY_PATH \
+  -out $KSEF_SIGN_CERT_PATH
 ```
 
 ### Run pytest framework

@@ -52,7 +52,7 @@ def invoice_data(config):
             "country_code": "PL",
         },
         "vendor2": {
-            "nip": 2222222222,
+            "nip": 2222222239,
             "name": "KSeF-utils Kraków",
             "address1": "ul. Github 11/12",
             "address2": "40-100 Kraków",
@@ -83,9 +83,10 @@ def invoice_data(config):
             "total_vat_value": "46",
             "payment": {
                 "due_date": "2023-12-20",
-                "description": "10 dni",
+                "description": "10 days",
                 "form": 6,
             },
+            "footer_note": "Tests: https://github.com/pprzetacznik/ksef-utils",
         },
     }
 
@@ -121,6 +122,8 @@ def test_send_invoice_signed(service, invoice_data):
     invoice_status = service.wait_until_invoice(reference_number)
     invoice = service.get_invoice(invoice_status.get("ksefReferenceNumber"))
     print(invoice)
+    response = service.session_terminate()
+    print(dumps(response, indent=4))
 
 
 @mark.current
