@@ -9,6 +9,9 @@ class Config:
     KSEF_TOKEN = getenv("KSEF_TOKEN")
     KSEF_NIP = getenv("KSEF_NIP")
     PUBLIC_KEY = readfile(join("cert", "pem"))
+    KSEF_SIGN_CERT_PATH = getenv("KSEF_SIGN_CERT_PATH")
+    KSEF_SIGN_KEY_PATH = getenv("KSEF_SIGN_KEY_PATH")
+    KSEF_SIGN_CA_PATH = getenv("KSEF_SIGN_CA_PATH")
 
 
 class ProdConfig(Config):

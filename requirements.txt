@@ -4,3 +4,4 @@ pytest-cov
 Jinja2
 pycryptodome
 lxml
+signxml==3.2.1

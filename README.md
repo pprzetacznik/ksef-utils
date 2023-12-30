@@ -44,6 +44,23 @@ Log in to https://ksef-test.mf.gov.pl/web/ and generate your individual `KSEF_TO
 export KSEF_ENV="test"
 export KSEF_TOKEN="..."
 export KSEF_NIP="..."
+export KSEF_SIGN_CERT_PATH="cert.pem"
+export KSEF_SIGN_KEY_PATH="privkey.pem"
+export KSEF_SIGN_CA_PATH="cert.pem"
+```
+
+### Generate test cert
+
+```Bash
+KSEF_NIP=${KSEF_NIP:-2222222222}
+KSEF_SUBJECT="/CN=John Doe/SN=Doe/GN=John/O=My Corp/C=PL/L=Lesser Voivodeship/serialNumber=NIP-${KSEF_NIP}/description=John Doe NIP-${KSEF_NIP}"
+openssl req -x509 \
+  -nodes \
+  -subj "${KSEF_SUBJECT}" \
+  -days 365 \
+  -newkey rsa \
+  -keyout privkey.pem \
+  -out cert.pem
 ```
 
 ### Run pytest framework

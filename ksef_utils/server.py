@@ -8,6 +8,7 @@ from ksef_utils.utils import (
     render_template,
     encrypt,
     iso_to_milliseconds,
+    sign_xml,
 )
 
 
@@ -21,6 +22,17 @@ class KSEFServer:
         response = requests.post(
             f"{self.config.URL}/api/online/Session/InitToken",
             data=rendered_template,
+            headers={
+                "Content-Type": "application/octet-stream",
+                "Accept": "application/json",
+            },
+        )
+        return response
+
+    def init_signed(self, data):
+        response = requests.post(
+            f"{self.config.URL}/api/online/Session/InitSigned",
+            data=data,
             headers={
                 "Content-Type": "application/octet-stream",
                 "Accept": "application/json",
@@ -79,8 +91,6 @@ class KSEFServer:
                 "type": "incremental",
                 "acquisitionTimestampThresholdFrom": from_string,
                 "acquisitionTimestampThresholdTo": to_string,
-                # "invoicingDateFrom": "2023-12-04T00:00:00+00:00",
-                # "invoicingDateTo": "2023-12-04T23:59:59+00:00",
             }
         }
         headers = {
@@ -180,6 +190,29 @@ class KSEFService:
         self.init_token = response.json().get("sessionToken").get("token")
         self.init_token_all = response.json()
         return self.init_token
+
+    def init_signed(self):
+        response_json = self.server.authorization_challenge()
+        challenge = response_json.get("challenge")
+        if not challenge:
+            print(json.dumps(response_json, indent=4))
+            raise Exception(
+                response_json.get("exception").get("exceptionDetailList")
+            )
+        rendered_template = render_template(
+            "InitSessionSignedRequest.xml",
+            challenge=challenge,
+            nip=self.server.config.KSEF_NIP,
+        )
+        print(rendered_template)
+        response_signed = sign_xml(rendered_template, self.server.config)
+        print(response_signed)
+        response = self.server.init_signed(
+            data=response_signed,
+        )
+        self.init_token = response.json().get("sessionToken").get("token")
+        self.init_token_all = response.json()
+        return response
 
     def wait_until_logged(self):
         logged = False

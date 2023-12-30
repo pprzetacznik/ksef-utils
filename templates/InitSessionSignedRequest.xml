@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" ?>
+<InitSessionSignedRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://ksef.mf.gov.pl/schema/gtw/svc/online/auth/request/2021/10/01/0001">
+  <Context>
+    <Challenge xmlns="http://ksef.mf.gov.pl/schema/gtw/svc/online/types/2021/10/01/0001">{{ challenge }}</Challenge>
+    <Identifier xmlns:q1="http://ksef.mf.gov.pl/schema/gtw/svc/types/2021/10/01/0001" xmlns="http://ksef.mf.gov.pl/schema/gtw/svc/online/types/2021/10/01/0001" xsi:type="q1:SubjectIdentifierByCompanyType">
+      <q1:Identifier>{{ nip }}</q1:Identifier>
+    </Identifier>
+    <DocumentType xmlns="http://ksef.mf.gov.pl/schema/gtw/svc/online/types/2021/10/01/0001">
+      <Service xmlns="http://ksef.mf.gov.pl/schema/gtw/svc/types/2021/10/01/0001">KSeF</Service>
+      <FormCode xmlns="http://ksef.mf.gov.pl/schema/gtw/svc/types/2021/10/01/0001">
+        <SystemCode>FA (2)</SystemCode>
+        <SchemaVersion>1-0E</SchemaVersion>
+        <TargetNamespace>http://crd.gov.pl/wzor/2023/06/29/12648/</TargetNamespace>
+        <Value>FA</Value>
+      </FormCode>
+    </DocumentType>
+    <Type xmlns="http://ksef.mf.gov.pl/schema/gtw/svc/online/types/2021/10/01/0001">SerialNumber</Type>
+  </Context>
+</InitSessionSignedRequest>
