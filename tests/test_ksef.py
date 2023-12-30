@@ -46,16 +46,16 @@ def invoice_data(config):
     return {
         "vendor1": {
             "nip": config.KSEF_NIP,
-            "name": "Markosoft-owner Krakow Sp.z o.o.",
-            "address1": "ul. Bracka 11/12",
-            "address2": "40-100 Krakow",
+            "name": "KSeF-utils Kraków",
+            "address1": "ul. Github 11/12",
+            "address2": "40-100 Kraków",
             "country_code": "PL",
         },
         "vendor2": {
             "nip": 2222222222,
-            "name": "Markosoft3 Krakow Sp.z o.o.",
-            "address1": "ul. Bracka 11/12",
-            "address2": "40-100 Krakow",
+            "name": "KSeF-utils Kraków",
+            "address1": "ul. Github 11/12",
+            "address2": "40-100 Kraków",
             "country_code": "PL",
         },
         "invoice": {
@@ -108,6 +108,7 @@ def test_send_invoice(service, invoice_data):
 
 @mark.functional
 @mark.e2e
+@mark.init_signed
 def test_send_invoice_signed(service, invoice_data):
     session_token = service.init_signed()
     print(f"session_token: {session_token}")

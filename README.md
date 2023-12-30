@@ -78,6 +78,7 @@ Run all e2e/functional/current tests
 (ksef) $ pytest -svvv tests/test_ksef.py -m "functional and not ignore"
 (ksef) $ pytest -svvv tests/test_ksef.py -m "current and not ignore"
 (ksef) $ ./run_tests.sh
+(ksef) $ TESTS_MARKERS="init_signed and e2e and not ignore" ./run_tests.sh
 ```
 
 ## OpenAPI
@@ -90,9 +91,15 @@ Run all e2e/functional/current tests
 
 ## Publish new release
 
-```
+```Bash
 $ git tag v1.0
 $ git push origin v1.0
+```
+
+## Building documentation
+
+```Bash
+(ksef) $ sphinx-build -M html docs docs_build
 ```
 
 ## KSEF references

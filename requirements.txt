@@ -4,4 +4,6 @@ pytest-cov
 Jinja2
 pycryptodome
 lxml
+pytz
 signxml==3.2.1
+Sphinx

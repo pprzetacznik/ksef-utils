@@ -1,11 +1,11 @@
 from os import getenv
 from os.path import join
-import pytz
+from pytz import timezone
 from ksef_utils.utils import readfile
 
 
 class Config:
-    TIMEZONE = pytz.timezone("Europe/Warsaw")
+    TIMEZONE = timezone("Europe/Warsaw")
     KSEF_TOKEN = getenv("KSEF_TOKEN")
     KSEF_NIP = getenv("KSEF_NIP")
     PUBLIC_KEY = readfile(join("cert", "pem"))
