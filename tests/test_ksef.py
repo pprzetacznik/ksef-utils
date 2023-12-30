@@ -50,6 +50,10 @@ def invoice_data(config):
             "address1": "ul. Github 11/12",
             "address2": "40-100 Kraków",
             "country_code": "PL",
+            "contact": {
+                "email": "test.ksef-utils@test.speedwell.pl",
+                "phone": 12121212121212,
+            },
         },
         "vendor2": {
             "nip": 2222222239,

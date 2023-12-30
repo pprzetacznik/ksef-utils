@@ -15,6 +15,12 @@
       <AdresL1>{{ vendor1.address1 }}</AdresL1>
       <AdresL2>{{ vendor1.address2 }}</AdresL2>
     </Adres>
+    {% if "contact" in vendor1 %}
+    <DaneKontaktowe>
+      <Email>{{ vendor1.contact.email }}</Email>
+      <Telefon>{{ vendor1.contact.phone }}</Telefon>
+    </DaneKontaktowe>
+    {% endif %}
   </Podmiot1>
   <Podmiot2>
     <DaneIdentyfikacyjne>
@@ -26,6 +32,12 @@
       <AdresL1>{{ vendor2.address1 }}</AdresL1>
       <AdresL2>{{ vendor2.address2 }}</AdresL2>
     </Adres>
+    {% if "contact" in vendor2 %}
+    <DaneKontaktowe>
+      <Email>{{ vendor2.contact.email }}</Email>
+      <Telefon>{{ vendor2.contact.phone }}</Telefon>
+    </DaneKontaktowe>
+    {% endif %}
   </Podmiot2>
   <Fa>
     <KodWaluty>{{ invoice.currency }}</KodWaluty>
