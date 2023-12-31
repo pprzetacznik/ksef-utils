@@ -26,9 +26,12 @@ def test_get_session(service, server, config):
     print(dumps(response.json(), indent=4))
 
 
+@mark.current
 @mark.functional
-def test_auth(config, server):
-    response = server.generate_token()
+def test_auth(config, service):
+    response = service.init_session()
+    service.wait_until_logged()
+    response = service.generate_token()
     print(response)
 
 
@@ -103,7 +106,6 @@ def invoice_data(config):
 
 
 @mark.functional
-@mark.e2e
 def test_send_invoice(service, invoice_data):
     response = service.init_session()
     print(dumps(response, indent=4))
@@ -119,7 +121,6 @@ def test_send_invoice(service, invoice_data):
 
 
 @mark.functional
-@mark.e2e
 @mark.init_signed
 def test_send_invoice_signed(service, invoice_data):
     session_token = service.init_signed()
@@ -137,7 +138,7 @@ def test_send_invoice_signed(service, invoice_data):
     print(dumps(response, indent=4))
 
 
-@mark.current
+# @mark.current
 def test_init_sign_request(service, invoice_data):
     session_token = service.init_signed()
     print(f"session_token: {session_token}")

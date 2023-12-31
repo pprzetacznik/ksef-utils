@@ -1,7 +1,8 @@
 # KSeF utils
 
-[![PyPI version](https://badge.fury.io/py/ksef-utils.svg)](https://pypi.org/project/ksef-utils/)
 [![ksef-utils Release](https://github.com/pprzetacznik/ksef-utils/actions/workflows/release.yml/badge.svg)](https://github.com/pprzetacznik/ksef-utils/actions/workflows/release.yml)
+[![ksef-utils Test](https://github.com/pprzetacznik/ksef-utils/actions/workflows/test.yml/badge.svg)](https://github.com/pprzetacznik/ksef-utils/actions/workflows/test.yml)
+[![PyPI version](https://badge.fury.io/py/ksef-utils.svg)](https://pypi.org/project/ksef-utils/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ksef-utils)](https://pypi.org/project/ksef-utils/)
 
 This project contains utilities and example requests that can be helpful when integrating with Polish central invoicing system called [Krajowy System e-Faktur (KSeF)](https://www.podatki.gov.pl/ksef/).
@@ -78,7 +79,7 @@ Run all e2e/functional/current tests
 (ksef) $ pytest -svvv tests/test_ksef.py -m "functional and not ignore"
 (ksef) $ pytest -svvv tests/test_ksef.py -m "current and not ignore"
 (ksef) $ ./run_tests.sh
-(ksef) $ TESTS_MARKERS="init_signed and e2e and not ignore" ./run_tests.sh
+(ksef) $ TESTS_MARKERS="init_signed and functional and not ignore" ./run_tests.sh
 ```
 
 ## OpenAPI

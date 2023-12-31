@@ -130,7 +130,7 @@ class KSEFServer:
         )
         return response
 
-    def generate_token(self):
+    def generate_token(self, session_token):
         data = {
             "generateToken": {
                 "credentialsRoleList": [
@@ -147,7 +147,7 @@ class KSEFServer:
                         "roleDescription": "write invoices",
                     },
                 ],
-                "description": "token_to_grant_acess",
+                "description": "token_to_grant_access",
             }
         }
         response = requests.post(
@@ -155,10 +155,11 @@ class KSEFServer:
             json=data,
             headers={
                 "Content-Type": "application/json",
+                "SessionToken": session_token,
                 "Accept": "application/json",
             },
         )
-        return response.json()
+        return response
 
     def get_invoice_status(self, reference_number: str, session_token: str):
         headers = {
@@ -297,6 +298,10 @@ class KSEFService:
 
     def get_upo(self, reference_number: str) -> str:
         response = self.server.get_upo(self.init_token, reference_number)
+        return response.json()
+
+    def generate_token(self):
+        response = self.server.generate_token(self.init_token)
         return response.json()
 
 
