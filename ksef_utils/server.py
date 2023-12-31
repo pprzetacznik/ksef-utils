@@ -147,12 +147,23 @@ class KSEFServer:
                         "roleDescription": "write invoices",
                     },
                 ],
-                "description": "token_to_grant_access",
+                "description": "0_ksef-utils_test_token",
             }
         }
         response = requests.post(
             f"{self.config.URL}/api/online/Credentials/GenerateToken",
             json=data,
+            headers={
+                "Content-Type": "application/json",
+                "SessionToken": session_token,
+                "Accept": "application/json",
+            },
+        )
+        return response
+
+    def get_token_status(self, session_token, reference_number):
+        response = requests.get(
+            f"{self.config.URL}/api/online/Credentials/Status/{reference_number}",
             headers={
                 "Content-Type": "application/json",
                 "SessionToken": session_token,
@@ -302,6 +313,21 @@ class KSEFService:
 
     def generate_token(self):
         response = self.server.generate_token(self.init_token)
+        return response.json()
+
+    def wait_until_token(self, element_reference_number):
+        response = self.server.get_token_status(
+            self.init_token, element_reference_number
+        )
+        processing_code = 302
+        while processing_code != 200:
+            response_status = self.server.get_token_status(
+                self.init_token, element_reference_number
+            )
+            processing_code = response_status.json().get("processingCode")
+            print(response)
+            if processing_code != 200:
+                sleep(1)
         return response.json()
 
 

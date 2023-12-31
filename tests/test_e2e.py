@@ -25,11 +25,12 @@ def when_generate_token(config, service, testing_context):
     print(response)
     print(response.get("authorisationToken"))
     testing_context["authorisationToken"] = response.get("authorisationToken")
+    service.wait_until_token(response.get("elementReferenceNumber"))
 
 
 @then("sign in using token")
 def then_sign_in_token(config, service, testing_context):
     print(dumps(testing_context, indent=4))
-    # config.KSEF_TOKEN = testing_context.get("authorisationToken")
-    # response = service.init_session()
-    # print(response)
+    config.KSEF_TOKEN = testing_context.get("authorisationToken")
+    response = service.init_session()
+    print(response)
