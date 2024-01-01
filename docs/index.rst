@@ -10,6 +10,9 @@ Welcome to KSeF-utils's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+.. image:: https://readthedocs.org/projects/ksef-utils/badge/?version=latest
+    :target: https://ksef-utils.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 
 Indices and tables
