@@ -6,3 +6,4 @@ Feature: KSeF Web API
         Given signed in using cert
         When generate token
         Then sign in using token
+        Then send an invoice

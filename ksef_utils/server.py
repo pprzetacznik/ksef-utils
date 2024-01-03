@@ -1,8 +1,8 @@
 from time import sleep
 from datetime import datetime
-import json
-import base64
-import hashlib
+from json import dumps
+from base64 import b64encode
+from hashlib import sha256
 import requests
 from ksef_utils.utils import (
     render_template,
@@ -198,7 +198,20 @@ class KSEFServer:
             "SessionToken": session_token,
             "Content-Type": "application/json",
         }
-        response = requests.put(url, data=json.dumps(data), headers=headers)
+        response = requests.put(url, data=dumps(data), headers=headers)
+        return response
+
+    def post_payment_identifier(
+        self, session_token, ksef_reference_list: list[str]
+    ):
+        data = {"ksefReferenceNumberList": ksef_reference_list}
+        headers = {
+            "accept": "application/json",
+            "SessionToken": session_token,
+            "Content-Type": "application/json",
+        }
+        url = f"{self.config.URL}/api/online/Payment/Identifier/Request"
+        response = requests.post(url, data=data, headers=headers)
         return response
 
 
@@ -210,7 +223,7 @@ class KSEFService:
         response_json = self.server.authorization_challenge()
         challenge = response_json.get("challenge")
         if not challenge:
-            print(json.dumps(response_json, indent=4))
+            print(dumps(response_json, indent=4))
             raise Exception(
                 response_json.get("exception").get("exceptionDetailList")
             )
@@ -232,7 +245,7 @@ class KSEFService:
         response_json = self.server.authorization_challenge()
         challenge = response_json.get("challenge")
         if not challenge:
-            print(json.dumps(response_json, indent=4))
+            print(dumps(response_json, indent=4))
             raise Exception(
                 response_json.get("exception").get("exceptionDetailList")
             )
@@ -259,7 +272,7 @@ class KSEFService:
         logged = False
         while not logged:
             response = self.server.get_status(self.init_token)
-            print(json.dumps(response.json(), indent=4))
+            print(dumps(response.json(), indent=4))
             if response.json().get("processingCode") == 310:
                 logged = True
             sleep(1)
@@ -273,13 +286,13 @@ class KSEFService:
             "hashSHA": {
                 "algorithm": "SHA-256",
                 "encoding": "Base64",
-                "value": base64.b64encode(
-                    hashlib.sha256(invoice_encoded).digest()
-                ).decode("utf-8"),
+                "value": b64encode(sha256(invoice_encoded).digest()).decode(
+                    "utf-8"
+                ),
             },
         }
         invoice_payload = {
-            "invoiceBody": base64.b64encode(invoice_encoded).decode("utf-8"),
+            "invoiceBody": b64encode(invoice_encoded).decode("utf-8"),
             "type": "plain",
         }
         data = {"invoiceHash": invoice_hash, "invoicePayload": invoice_payload}
@@ -290,7 +303,7 @@ class KSEFService:
         while not invoice_status:
             response = self.get_invoice_status(reference_number)
             print(response.status_code)
-            print(json.dumps(response.json(), indent=4))
+            print(dumps(response.json(), indent=4))
             invoice_status = response.json().get("invoiceStatus")
             if not invoice_status.get("ksefReferenceNumber"):
                 invoice_status = {}
@@ -328,6 +341,10 @@ class KSEFService:
             print(response)
             if processing_code != 200:
                 sleep(1)
+        return response.json()
+
+    def post_payment_identifier(self):
+        response = self.server.post_payment_identifier(self.init_token, [])
         return response.json()
 
 

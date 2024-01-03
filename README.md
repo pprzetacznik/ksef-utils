@@ -83,6 +83,27 @@ Run all e2e/functional/current tests
 (ksef) $ TESTS_MARKERS="init_signed and functional and not ignore" ./run_tests.sh
 ```
 
+## Example
+
+See [tests/test_e2e.py](tests/test_e2e.py) for detailed examples of usage.
+
+```Python
+from ksef_utils.server import KSEFServer, KSEFService
+from ksef_utils.config import TestConfig, DemoConfig, ProdConfig
+
+config = TestConfig()
+server = KSEFServer(config)
+service = KSEFService(service)
+
+invoice_data = {
+    # ...
+    # see tests/conftest.py for example json invoice
+}
+
+session_token = service.init_signed()
+response_send_invoice = service.send_invoice(**invoice_data)
+```
+
 ## OpenAPI
 
 ```

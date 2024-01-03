@@ -34,3 +34,16 @@ def then_sign_in_token(config, service, testing_context):
     config.KSEF_TOKEN = testing_context.get("authorisationToken")
     response = service.init_session()
     print(response)
+
+
+@then("send an invoice")
+def then_sign_in_token(config, service, invoice_data):
+    response_send_invoice = service.send_invoice(**invoice_data)
+    print(response_send_invoice.status_code)
+    print(dumps(response_send_invoice.json(), indent=4))
+    reference_number = response_send_invoice.json().get(
+        "elementReferenceNumber"
+    )
+    invoice_status = service.wait_until_invoice(reference_number)
+    invoice = service.get_invoice(invoice_status.get("ksefReferenceNumber"))
+    print(invoice)
