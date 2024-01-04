@@ -50,7 +50,8 @@ def test_send_invoice(service, invoice_data):
     reference_number = response_send_invoice.json().get(
         "elementReferenceNumber"
     )
-    invoice_status = service.wait_until_invoice(reference_number)
+    response = service.wait_until_invoice(reference_number)
+    invoice_status = response.get("invoiceStatus")
     invoice = service.get_invoice(invoice_status.get("ksefReferenceNumber"))
     print(invoice)
 
@@ -66,25 +67,12 @@ def test_send_invoice_signed(service, invoice_data):
     reference_number = response_send_invoice.json().get(
         "elementReferenceNumber"
     )
-    invoice_status = service.wait_until_invoice(reference_number)
+    response = service.wait_until_invoice(reference_number)
+    invoice_status = response.get("invoiceStatus")
     invoice = service.get_invoice(invoice_status.get("ksefReferenceNumber"))
     print(invoice)
     response = service.session_terminate()
     print(dumps(response, indent=4))
-
-
-def test_init_sign_request(service, invoice_data):
-    session_token = service.init_signed()
-    print(f"session_token: {session_token}")
-    response_send_invoice = service.send_invoice(**invoice_data)
-    print(response_send_invoice.status_code)
-    print(dumps(response_send_invoice.json(), indent=4))
-    reference_number = response_send_invoice.json().get(
-        "elementReferenceNumber"
-    )
-    invoice_status = service.wait_until_invoice(reference_number)
-    invoice = service.get_invoice(invoice_status.get("ksefReferenceNumber"))
-    print(invoice)
 
 
 @mark.current

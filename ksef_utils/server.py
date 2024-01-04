@@ -54,10 +54,7 @@ class KSEFServer:
 
     def get_upo(self, session_token, reference_number):
         headers = {
-            # "accept": "application/json",
-            "accept": "application/vnd.v3+json",
-            "SessionToken": session_token,
-            "Content-Type": "application/json",
+            "accept": "application/json",
         }
         response = requests.get(
             f"{self.config.URL}/api/common/Status/{reference_number}",
@@ -211,7 +208,7 @@ class KSEFServer:
             "Content-Type": "application/json",
         }
         url = f"{self.config.URL}/api/online/Payment/Identifier/Request"
-        response = requests.post(url, data=data, headers=headers)
+        response = requests.post(url, json=data, headers=headers)
         return response
 
 
@@ -309,7 +306,7 @@ class KSEFService:
                 invoice_status = {}
             if not invoice_status:
                 sleep(1)
-        return invoice_status
+        return response.json()
 
     def get_invoice_status(self, reference_number: str):
         return self.server.get_invoice_status(
@@ -323,6 +320,19 @@ class KSEFService:
     def get_upo(self, reference_number: str) -> str:
         response = self.server.get_upo(self.init_token, reference_number)
         return response.json()
+
+    def wait_until_upo(
+        self, reference_number: str, max_retries: int = 60, interval: str = 2
+    ) -> str:
+        processing_code = 310
+        while processing_code != 200 and max_retries > 0:
+            response = self.get_upo(reference_number)
+            processing_code = response.get("processingCode")
+            print(dumps(response, indent=4))
+            if processing_code != 200:
+                sleep(interval)
+            max_retries -= 1
+        return response
 
     def generate_token(self):
         response = self.server.generate_token(self.init_token)
@@ -343,8 +353,10 @@ class KSEFService:
                 sleep(1)
         return response.json()
 
-    def post_payment_identifier(self):
-        response = self.server.post_payment_identifier(self.init_token, [])
+    def post_payment_identifier(self, ksef_reference_list: list[str] = None):
+        response = self.server.post_payment_identifier(
+            self.init_token, ksef_reference_list
+        )
         return response.json()
 
 

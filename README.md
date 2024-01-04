@@ -6,7 +6,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ksef-utils)](https://pypi.org/project/ksef-utils/)
 [![Documentation Status](https://readthedocs.org/projects/ksef-utils/badge/?version=latest)](https://ksef-utils.readthedocs.io/en/latest/?badge=latest)
 
-This project contains utilities and example requests that can be helpful when integrating with Polish central invoicing system called [Krajowy System e-Faktur (KSeF)](https://www.podatki.gov.pl/ksef/).
+This project contains Python utilities and example requests that can be helpful when integrating with Polish central invoicing system called [Krajowy System e-Faktur (KSeF)](https://www.podatki.gov.pl/ksef/).
 
 ## Installation
 

@@ -1,6 +1,8 @@
 from json import dumps
+from base64 import b64decode
 from pytest import fixture
 from pytest_bdd import scenario, given, when, then
+from ksef_utils.utils import format_xml
 
 
 @scenario("e2e.feature", "End to end")
@@ -37,13 +39,30 @@ def then_sign_in_token(config, service, testing_context):
 
 
 @then("send an invoice")
-def then_sign_in_token(config, service, invoice_data):
+def then_send_invoice(config, service, invoice_data, testing_context):
     response_send_invoice = service.send_invoice(**invoice_data)
     print(response_send_invoice.status_code)
     print(dumps(response_send_invoice.json(), indent=4))
+    testing_context["invoice_response"] = response_send_invoice.json()
     reference_number = response_send_invoice.json().get(
         "elementReferenceNumber"
     )
-    invoice_status = service.wait_until_invoice(reference_number)
+    response = service.wait_until_invoice(reference_number)
+    invoice_status = response.get("invoiceStatus")
     invoice = service.get_invoice(invoice_status.get("ksefReferenceNumber"))
     print(invoice)
+    testing_context["invoice_response"] = response
+
+
+@then("terminate session")
+def then_terminate_session(service):
+    response = service.session_terminate()
+    print(dumps(response, indent=4))
+
+
+@then("get upo")
+def then_get_upo(config, service, invoice_data, testing_context):
+    response = service.wait_until_upo(
+        testing_context["invoice_response"].get("referenceNumber")
+    )
+    print(format_xml(b64decode(response.get("upo"))))
