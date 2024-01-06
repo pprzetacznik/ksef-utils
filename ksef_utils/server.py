@@ -359,6 +359,12 @@ class KSEFService:
         )
         return response.json()
 
+    def get_invoices(self, from_date=None, to_date=None):
+        response = self.server.get_invoices(
+            self.init_token, from_date, to_date
+        )
+        return response.json()
+
 
 class KSEFUtils:
     @staticmethod

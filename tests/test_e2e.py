@@ -6,7 +6,7 @@ from ksef_utils.utils import format_xml
 
 
 @scenario("e2e.feature", "End to end")
-def test_e2e(config, service):
+def test_e2e(service):
     pass
 
 
@@ -16,13 +16,13 @@ def testing_context():
 
 
 @given("signed in using cert")
-def given_signed_in_cert(config, service):
+def given_signed_in_cert(service):
     session_token = service.init_signed()
     print(f"session_token: {session_token}")
 
 
 @when("generate token")
-def when_generate_token(config, service, testing_context):
+def when_generate_token(service, testing_context):
     response = service.generate_token()
     print(response)
     print(response.get("authorisationToken"))
@@ -39,7 +39,7 @@ def then_sign_in_token(config, service, testing_context):
 
 
 @then("send an invoice")
-def then_send_invoice(config, service, invoice_data, testing_context):
+def then_send_invoice(service, invoice_data, testing_context):
     response_send_invoice = service.send_invoice(**invoice_data)
     print(response_send_invoice.status_code)
     print(dumps(response_send_invoice.json(), indent=4))
@@ -61,8 +61,14 @@ def then_terminate_session(service):
 
 
 @then("get upo")
-def then_get_upo(config, service, invoice_data, testing_context):
+def then_get_upo(service, testing_context):
     response = service.wait_until_upo(
         testing_context["invoice_response"].get("referenceNumber")
     )
     print(format_xml(b64decode(response.get("upo"))))
+
+
+@then("get invoices")
+def then_get_upo(service, testing_context):
+    response = service.get_invoices()
+    print(dumps(response, indent=4))

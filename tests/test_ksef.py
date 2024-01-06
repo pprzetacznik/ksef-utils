@@ -5,10 +5,10 @@ from ksef_utils.utils import format_xml
 
 
 @mark.functional
-def test_get_invoice(server, service, config):
+def test_get_invoice(service, config):
     response = service.init_session()
     service.wait_until_logged()
-    response = server.get_invoices(service.init_token)
+    response = service.get_invoices()
     print(dumps(response.json(), indent=4))
     print(response.status_code)
     invoices = response.json().get("invoiceHeaderList")
@@ -44,6 +44,7 @@ def test_init_session(config, service):
 def test_send_invoice(service, invoice_data):
     response = service.init_session()
     print(dumps(response, indent=4))
+    service.wait_until_logged()
     response_send_invoice = service.send_invoice(**invoice_data)
     print(response_send_invoice.status_code)
     print(dumps(response_send_invoice.json(), indent=4))

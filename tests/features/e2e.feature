@@ -9,3 +9,5 @@ Feature: KSeF Web API
         Then send an invoice
         Then terminate session
         Then get upo
+        Then sign in using token
+        Then get invoices
