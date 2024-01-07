@@ -11,3 +11,4 @@ Feature: KSeF Web API
         Then get upo
         Then sign in using token
         Then get invoices
+        Then terminate session

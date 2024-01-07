@@ -36,6 +36,7 @@ def then_sign_in_token(config, service, testing_context):
     config.KSEF_TOKEN = testing_context.get("authorisationToken")
     response = service.init_session()
     print(response)
+    response = service.wait_until_logged()
 
 
 @then("send an invoice")
@@ -72,3 +73,9 @@ def then_get_upo(service, testing_context):
 def then_get_upo(service, testing_context):
     response = service.get_invoices()
     print(dumps(response, indent=4))
+    invoices = response.get("invoiceHeaderList")
+    if invoices:
+        last_invoice_id = invoices[0].get("ksefReferenceNumber")
+        print(last_invoice_id)
+        invoice = service.get_invoice(last_invoice_id)
+        print(format_xml(invoice))

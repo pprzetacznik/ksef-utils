@@ -143,6 +143,10 @@ class KSEFServer:
                         "roleType": "invoice_write",
                         "roleDescription": "write invoices",
                     },
+                    {
+                        "roleType": "invoice_read",
+                        "roleDescription": "read invoices",
+                    },
                 ],
                 "description": "0_ksef-utils_test_token",
             }
@@ -215,6 +219,7 @@ class KSEFServer:
 class KSEFService:
     def __init__(self, server: KSEFServer):
         self.server = server
+        self.config = server.config
 
     def init_session(self):
         response_json = self.server.authorization_challenge()
@@ -226,13 +231,13 @@ class KSEFService:
             )
         encrypted_token = KSEFUtils.get_encrypted_token(
             response_json,
-            self.server.config.PUBLIC_KEY,
-            self.server.config.KSEF_TOKEN,
+            self.config.PUBLIC_KEY,
+            self.config.KSEF_TOKEN,
         )
         response = self.server.init_token(
             challenge=challenge,
             token=encrypted_token,
-            nip=self.server.config.KSEF_NIP,
+            nip=self.config.KSEF_NIP,
         )
         self.init_token = response.json().get("sessionToken").get("token")
         self.init_token_all = response.json()
@@ -249,10 +254,10 @@ class KSEFService:
         rendered_template = render_template(
             "InitSessionSignedRequest.xml",
             challenge=challenge,
-            nip=self.server.config.KSEF_NIP,
+            nip=self.config.KSEF_NIP,
         )
         print(rendered_template)
-        response_signed = sign_xml(rendered_template, self.server.config)
+        response_signed = sign_xml(rendered_template, self.config)
         print(response_signed)
         response = self.server.init_signed(
             data=response_signed,
@@ -269,10 +274,12 @@ class KSEFService:
         logged = False
         while not logged:
             response = self.server.get_status(self.init_token)
-            print(dumps(response.json(), indent=4))
-            if response.json().get("processingCode") == 310:
+            response_json = response.json()
+            print(dumps(response_json, indent=4))
+            if response_json.get("processingCode") == 315:
                 logged = True
             sleep(1)
+        return response_json
 
     def send_invoice(self, **kwargs):
         invoice = render_template("invoice_example.xml", **kwargs)
@@ -363,6 +370,10 @@ class KSEFService:
         response = self.server.get_invoices(
             self.init_token, from_date, to_date
         )
+        return response.json()
+
+    def get_status(self):
+        response = self.server.get_status(self.init_token)
         return response.json()
 
 

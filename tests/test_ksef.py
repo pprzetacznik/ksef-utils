@@ -4,14 +4,14 @@ from pytest import mark, fixture
 from ksef_utils.utils import format_xml
 
 
+@mark.current
 @mark.functional
 def test_get_invoice(service, config):
     response = service.init_session()
     service.wait_until_logged()
     response = service.get_invoices()
-    print(dumps(response.json(), indent=4))
-    print(response.status_code)
-    invoices = response.json().get("invoiceHeaderList")
+    print(dumps(response, indent=4))
+    invoices = response.get("invoiceHeaderList")
     if invoices:
         last_invoice_id = invoices[0].get("ksefReferenceNumber")
         print(last_invoice_id)
@@ -22,8 +22,8 @@ def test_get_invoice(service, config):
 @mark.functional
 def test_get_session(service, server, config):
     response = service.init_session()
-    response = server.get_status(service.init_token)
-    print(dumps(response.json(), indent=4))
+    response = service.get_status()
+    print(dumps(response, indent=4))
 
 
 @mark.functional
@@ -76,7 +76,7 @@ def test_send_invoice_signed(service, invoice_data):
     print(dumps(response, indent=4))
 
 
-@mark.current
+@mark.functional
 def test_payment_identifier(config, service):
     service.init_signed()
     response = service.post_payment_identifier()

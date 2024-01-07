@@ -12,10 +12,12 @@ class Config:
     KSEF_SIGN_CERT_PATH = getenv("KSEF_SIGN_CERT_PATH")
     KSEF_SIGN_KEY_PATH = getenv("KSEF_SIGN_KEY_PATH")
     KSEF_SIGN_CA_PATH = getenv("KSEF_SIGN_CA_PATH")
+    LOGS_VERBOSE = True
 
 
 class ProdConfig(Config):
     URL = "https://ksef.mf.gov.pl"
+    LOGS_VERBOSE = False
 
 
 class DemoConfig(Config):

@@ -130,3 +130,7 @@ $ git push origin v1.0
 * https://www.podatki.gov.pl/ksef/
 * https://ksef-test.mf.gov.pl/web/
 * https://www.youtube.com/watch?v=dnBGO6IPtzA
+
+## Contributing
+
+* https://www.conventionalcommits.org/en/v1.0.0/
