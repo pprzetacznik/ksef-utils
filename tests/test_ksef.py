@@ -4,7 +4,6 @@ from pytest import mark, fixture
 from ksef_utils.utils import format_xml
 
 
-@mark.current
 @mark.functional
 def test_get_invoice(service, config):
     response = service.init_session()
@@ -80,4 +79,31 @@ def test_send_invoice_signed(service, invoice_data):
 def test_payment_identifier(config, service):
     service.init_signed()
     response = service.post_payment_identifier()
+    print(dumps(response, indent=4))
+
+
+@mark.current
+@mark.functional
+def test_context_grant(config, service):
+    service.init_signed()
+    identifier = "0000"
+    response = service.get_generate_internal_identifier(identifier)
+    print(dumps(response, indent=4))
+    internal_identifier = response.get("internalIdentifier")
+    response = service.post_credentials_grant(onip="2222222239")
+    print(dumps(response, indent=4))
+    response = service.wait_until_token(response.get("elementReferenceNumber"))
+    print(dumps(response, indent=4))
+    response = service.post_context_grant(
+        credentials_identifier="2222222222",
+        credentials_identifier_type="nip",
+        context_identifier=internal_identifier,
+        context_identifier_type="int",
+    )
+    print(dumps(response, indent=4))
+
+    response = service.wait_until_token(response.get("elementReferenceNumber"))
+    print(dumps(response, indent=4))
+
+    response = service.get_credentials_grant()
     print(dumps(response, indent=4))

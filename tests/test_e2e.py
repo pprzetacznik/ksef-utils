@@ -24,7 +24,7 @@ def given_signed_in_cert(service):
 @when("generate token")
 def when_generate_token(service, testing_context):
     response = service.generate_token()
-    print(response)
+    print(dumps(response, indent=4))
     print(response.get("authorisationToken"))
     testing_context["authorisationToken"] = response.get("authorisationToken")
     service.wait_until_token(response.get("elementReferenceNumber"))

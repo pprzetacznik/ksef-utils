@@ -9,12 +9,15 @@ from ksef_utils.utils import (
     encrypt,
     iso_to_milliseconds,
     sign_xml,
+    debug_requests,
 )
 
 
 class KSEFServer:
     def __init__(self, config):
         self.config = config
+        if config.LOGS_VERBOSE:
+            debug_requests()
 
     def init_token(self, **kwargs):
         rendered_template = render_template("InitSession.xml", **kwargs)
@@ -62,11 +65,11 @@ class KSEFServer:
         )
         return response
 
-    def authorization_challenge(self):
+    def authorization_challenge(self, identifier, identifier_type="onip"):
         data = {
             "contextIdentifier": {
-                "type": "onip",
-                "identifier": self.config.KSEF_NIP,
+                "type": identifier_type,
+                "identifier": identifier,
             }
         }
         response = requests.post(
@@ -147,6 +150,14 @@ class KSEFServer:
                         "roleType": "invoice_read",
                         "roleDescription": "read invoices",
                     },
+                    {
+                        "roleType": "payment_confirmation_write",
+                        "roleDescription": "payment_confirmation_write",
+                    },
+                    # {
+                    #     "roleType": "enforcement_operations",
+                    #     "roleDescription": "enforcement_operations",
+                    # },
                 ],
                 "description": "0_ksef-utils_test_token",
             }
@@ -154,6 +165,133 @@ class KSEFServer:
         response = requests.post(
             f"{self.config.URL}/api/online/Credentials/GenerateToken",
             json=data,
+            headers={
+                "Content-Type": "application/json",
+                "SessionToken": session_token,
+                "Accept": "application/json",
+            },
+        )
+        return response
+
+    def post_context_grant(
+        self,
+        session_token,
+        credentials_identifier,
+        credentials_identifier_type="nip",
+        context_identifier=None,
+        context_identifier_type="onip",
+    ):
+        data = {
+            "grantContextCredentials": {
+                "contextIdentifier": {
+                    "type": context_identifier_type,
+                    "identifier": context_identifier
+                    if context_identifier
+                    else self.config.KSEF_NIP,
+                },
+                "credentialsIdentifier": {
+                    "type": credentials_identifier_type,
+                    # "identifier": self.config.KSEF_NIP,
+                    "identifier": credentials_identifier,
+                },
+                "credentialsRole": {
+                    "roleType": "credentials_manage",
+                    "roleDescription": "credentials_manage",
+                },
+            }
+        }
+        response = requests.post(
+            f"{self.config.URL}/api/online/Credentials/ContextGrant",
+            json=data,
+            headers={
+                "Content-Type": "application/json",
+                "SessionToken": session_token,
+                "Accept": "application/json",
+            },
+        )
+        return response
+
+    def post_credentials_grant(self, session_token, onip):
+        """
+        # - introspection
+        # - invoice_read
+        # - invoice_write
+        # - payment_confirmation_write
+        # - credentials_read
+        # - credentials_manage
+        # - self_invoicing
+        # - tax_representative
+        # - enforcement_operations
+        # - subunit_manage
+        """
+        data = {
+            "grantCredentials": {
+                "credentialsIdentifier": {
+                    "type": "onip",
+                    "identifier": onip,
+                },
+                "credentialsRoleList": [
+                    # {
+                    #     "roleType": "introspection",
+                    #     "roleDescription": "introspection",
+                    # },
+                    {
+                        "roleType": "invoice_read",
+                        "roleDescription": "invoice_read",
+                    },
+                    {
+                        "roleType": "invoice_write",
+                        "roleDescription": "invoice_write",
+                    },
+                    {
+                        "roleType": "payment_confirmation_write",
+                        "roleDescription": "payment_confirmation_write",
+                    },
+                    {
+                        "roleType": "self_invoicing",
+                        "roleDescription": "self_invoicing",
+                    },
+                    {
+                        "roleType": "tax_representative",
+                        "roleDescription": "tax_representative",
+                    },
+                ],
+            }
+        }
+        response = requests.post(
+            f"{self.config.URL}/api/online/Credentials/Grant",
+            json=data,
+            headers={
+                "Content-Type": "application/json",
+                "SessionToken": session_token,
+                "Accept": "application/json",
+            },
+        )
+        return response
+
+    def get_credentials_grant(self, session_token):
+        # data = {
+        #     "query": {
+        #         "contextNip": "",
+        #         "sourceIdentifier": "",
+        #         "targetIdentifier": "",
+        #     }
+        # }
+        response = requests.get(
+            f"{self.config.URL}/api/online/Query/Credential/Context/Sync",
+            headers={
+                "Content-Type": "application/json",
+                "SessionToken": session_token,
+                "Accept": "application/json",
+            },
+        )
+        return response
+
+    def get_generate_internal_identifier(
+        self, session_token, input_digits_sequence
+    ):
+        response = requests.get(
+            f"{self.config.URL}/api/online/Session/GenerateInternalIdentifier/{input_digits_sequence}",
             headers={
                 "Content-Type": "application/json",
                 "SessionToken": session_token,
@@ -222,7 +360,14 @@ class KSEFService:
         self.config = server.config
 
     def init_session(self):
-        response_json = self.server.authorization_challenge()
+        if self.config.KSEF_ID:
+            response_json = self.server.authorization_challenge(
+                f"{self.config.KSEF_NIP}-{self.config.KSEF_ID}", "int"
+            )
+        else:
+            response_json = self.server.authorization_challenge(
+                self.config.KSEF_NIP
+            )
         challenge = response_json.get("challenge")
         if not challenge:
             print(dumps(response_json, indent=4))
@@ -244,7 +389,9 @@ class KSEFService:
         return self.init_token
 
     def init_signed(self):
-        response_json = self.server.authorization_challenge()
+        response_json = self.server.authorization_challenge(
+            self.config.KSEF_NIP
+        )
         challenge = response_json.get("challenge")
         if not challenge:
             print(dumps(response_json, indent=4))
@@ -262,6 +409,7 @@ class KSEFService:
         response = self.server.init_signed(
             data=response_signed,
         )
+        print(dumps(response.json(), indent=4))
         self.init_token = response.json().get("sessionToken").get("token")
         self.init_token_all = response.json()
         return response
@@ -355,7 +503,7 @@ class KSEFService:
                 self.init_token, element_reference_number
             )
             processing_code = response_status.json().get("processingCode")
-            print(response)
+            print(dumps(response.json(), indent=4))
             if processing_code != 200:
                 sleep(1)
         return response.json()
@@ -374,6 +522,38 @@ class KSEFService:
 
     def get_status(self):
         response = self.server.get_status(self.init_token)
+        return response.json()
+
+    def post_context_grant(
+        self,
+        credentials_identifier,
+        credentials_identifier_type="nip",
+        context_identifier=None,
+        context_identifier_type="onip",
+    ):
+        response = self.server.post_context_grant(
+            self.init_token,
+            credentials_identifier=credentials_identifier,
+            credentials_identifier_type=credentials_identifier_type,
+            context_identifier=context_identifier,
+            context_identifier_type=context_identifier_type,
+        )
+        return response.json()
+
+    def post_credentials_grant(self, onip):
+        response = self.server.post_credentials_grant(
+            self.init_token, onip=onip
+        )
+        return response.json()
+
+    def get_credentials_grant(self):
+        response = self.server.get_credentials_grant(self.init_token)
+        return response.json()
+
+    def get_generate_internal_identifier(self, input_digits_sequence="0000"):
+        response = self.server.get_generate_internal_identifier(
+            self.init_token, input_digits_sequence
+        )
         return response.json()
 
 
