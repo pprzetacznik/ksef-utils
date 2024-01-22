@@ -35,7 +35,7 @@ jobs:
         export KSEF_SIGN_CERT_PATH="/tmp/cert.pem"
         export KSEF_SIGN_KEY_PATH="/tmp/privkey.pem"
         export KSEF_SIGN_CA_PATH="/tmp/cert.pem"
-        export TESTS_MARKERS="(init_signed or e2e) and not ignore"
+        export TESTS_MARKERS="(init_signed or e2e or current) and not ignore"
         export KSEF_SUBJECT="/CN=John Doe/SN=Doe/GN=John/O=My Corp/C=PL/L=Lesser Voivodeship/serialNumber=NIP-${KSEF_NIP}/description=John Doe NIP-${KSEF_NIP}"
         openssl req -x509 \
           -nodes \

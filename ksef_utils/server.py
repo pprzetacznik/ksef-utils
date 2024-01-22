@@ -10,6 +10,7 @@ from ksef_utils.utils import (
     iso_to_milliseconds,
     sign_xml,
     debug_requests,
+    KSEFUtils,
 )
 
 
@@ -360,14 +361,9 @@ class KSEFService:
         self.config = server.config
 
     def init_session(self):
-        if self.config.KSEF_ID:
-            response_json = self.server.authorization_challenge(
-                f"{self.config.KSEF_NIP}-{self.config.KSEF_ID}", "int"
-            )
-        else:
-            response_json = self.server.authorization_challenge(
-                self.config.KSEF_NIP
-            )
+        response_json = self.server.authorization_challenge(
+            self.config.KSEF_NIP
+        )
         challenge = response_json.get("challenge")
         if not challenge:
             print(dumps(response_json, indent=4))
@@ -555,21 +551,3 @@ class KSEFService:
             self.init_token, input_digits_sequence
         )
         return response.json()
-
-
-class KSEFUtils:
-    @staticmethod
-    def get_encrypted_token(
-        response_json: dict, public_key: str, ksef_token: str
-    ) -> str:
-        challenge = response_json.get("challenge")
-        if not challenge:
-            exception = response_json.get("exception")
-            print(f"exception: {exception}")
-
-        challenge_time_iso = response_json.get("timestamp")
-        challenge_time = iso_to_milliseconds(challenge_time_iso)
-        print("challenge_time:  ", challenge_time)
-
-        encrypted_token = encrypt(public_key, ksef_token, str(challenge_time))
-        return encrypted_token

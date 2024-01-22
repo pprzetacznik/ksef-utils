@@ -1,7 +1,7 @@
 from datetime import datetime
 from json import dumps
 from pytest import mark, fixture
-from ksef_utils.utils import format_xml
+from ksef_utils.utils import format_xml, KSEFUtils
 
 
 @mark.functional
@@ -85,17 +85,18 @@ def test_payment_identifier(config, service):
 @mark.current
 @mark.functional
 def test_context_grant(config, service):
+    NIP_TO_GRANT = "2222222239"
     service.init_signed()
     identifier = "0000"
     response = service.get_generate_internal_identifier(identifier)
     print(dumps(response, indent=4))
     internal_identifier = response.get("internalIdentifier")
-    response = service.post_credentials_grant(onip="2222222239")
+    response = service.post_credentials_grant(onip=NIP_TO_GRANT)
     print(dumps(response, indent=4))
     response = service.wait_until_token(response.get("elementReferenceNumber"))
     print(dumps(response, indent=4))
     response = service.post_context_grant(
-        credentials_identifier="2222222222",
+        credentials_identifier=NIP_TO_GRANT,
         credentials_identifier_type="nip",
         context_identifier=internal_identifier,
         context_identifier_type="int",
@@ -107,3 +108,13 @@ def test_context_grant(config, service):
 
     response = service.get_credentials_grant()
     print(dumps(response, indent=4))
+
+    result = KSEFUtils.generate_certs(
+        NIP_TO_GRANT, KSEFUtils.SerialNumberType.NIP, output_dir="."
+    )
+    print(result)
+    config.KSEF_NIP = NIP_TO_GRANT
+    config.KSEF_SIGN_CERT_PATH = result.get("KSEF_SIGN_CERT_PATH")
+    config.KSEF_SIGN_KEY_PATH = result.get("KSEF_SIGN_KEY_PATH")
+    config.KSEF_SIGN_CA_PATH = result.get("KSEF_SIGN_CA_PATH")
+    service.init_signed()

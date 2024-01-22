@@ -1,3 +1,6 @@
+from os.path import join
+import subprocess
+from enum import Enum
 import logging
 from datetime import datetime, timezone
 from base64 import b64encode
@@ -80,3 +83,72 @@ def debug_requests():
     requests_log = logging.getLogger("requests.packages.urllib3")
     requests_log.setLevel(logging.DEBUG)
     requests_log.propagate = True
+
+
+class KSEFUtils:
+    class SerialNumberType(Enum):
+        NIP = "NIP"
+        PESEL = "PESEL"
+
+        def __str__(self):
+            return f"{self.value}"
+
+    @staticmethod
+    def get_encrypted_token(
+        response_json: dict, public_key: str, ksef_token: str
+    ) -> str:
+        challenge = response_json.get("challenge")
+        if not challenge:
+            exception = response_json.get("exception")
+            print(f"exception: {exception}")
+
+        challenge_time_iso = response_json.get("timestamp")
+        challenge_time = iso_to_milliseconds(challenge_time_iso)
+        print("challenge_time:  ", challenge_time)
+
+        encrypted_token = encrypt(public_key, ksef_token, str(challenge_time))
+        return encrypted_token
+
+    @staticmethod
+    def generate_certs(
+        serial_number: str,
+        serial_number_type: SerialNumberType = SerialNumberType.NIP,
+        output_dir: str = "/tmp",
+    ) -> str:
+        KSEF_SIGN_CERT_PATH = f"{serial_number}-cert.pem"
+        KSEF_SIGN_KEY_PATH = f"{serial_number}-privkey.pem"
+        KSEF_SIGN_CA_PATH = f"{serial_number}-cert.pem"
+        KSEF_SUBJECT = (
+            "/CN=Jan Kowalski/SN=Kowalski/GN=Jan/O=Testowa firma"
+            "/C=PL/L=Mazowieckie"
+            f"/serialNumber={serial_number_type}-{serial_number}"
+            f"/description=Jan Kowalski {serial_number_type}-{serial_number}"
+        )
+        result = subprocess.run(
+            [
+                "openssl",
+                "req",
+                "-x509",
+                "-nodes",
+                "-subj",
+                KSEF_SUBJECT,
+                "-days",
+                "365",
+                "-newkey",
+                "rsa",
+                "-keyout",
+                join(output_dir, KSEF_SIGN_KEY_PATH),
+                "-out",
+                join(output_dir, KSEF_SIGN_CERT_PATH),
+            ],
+            capture_output=True,
+        )
+        print(result)
+        return {
+            "output_dir": output_dir,
+            "KSEF_SIGN_CERT_PATH": join(output_dir, KSEF_SIGN_CERT_PATH),
+            "KSEF_SIGN_KEY_PATH": join(output_dir, KSEF_SIGN_KEY_PATH),
+            "KSEF_SIGN_CA_PATH": join(output_dir, KSEF_SIGN_CA_PATH),
+            "serial_number": serial_number,
+            "serial_number_type": serial_number_type.value,
+        }
