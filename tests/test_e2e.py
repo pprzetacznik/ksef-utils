@@ -15,6 +15,7 @@ def testing_context():
     return {}
 
 
+@then("signed in using cert")
 @given("signed in using cert")
 def given_signed_in_cert(service):
     session_token = service.init_signed()

@@ -12,3 +12,11 @@ Feature: KSeF Web API
         Then sign in using token
         Then get invoices
         Then terminate session
+
+    @current
+    Scenario: Self-invoicing
+        Given signed in using cert
+        Then grant context
+        Then generate new certs
+        Then signed in using cert
+
