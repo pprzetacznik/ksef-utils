@@ -111,7 +111,7 @@ response_send_invoice = service.send_invoice(**invoice_data)
 (ksef) $ pip install .
 (ksef) $ which ksef-utils
 (...)/.envs/bin/ksef-utils
-(ksef) $ ksef-utils --identifier 1111111111 --identifier_type NIP --working_directory .
+(ksef) $ ksef-utils --identifier 1111111111 --identifier_type PESEL --working_directory .
 ```
 
 ## OpenAPI
