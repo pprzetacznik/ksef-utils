@@ -114,7 +114,12 @@ class KSEFUtils:
         serial_number: str,
         serial_number_type: SerialNumberType = SerialNumberType.NIP,
         output_dir: str = "/tmp",
-    ) -> str:
+    ) -> dict:
+        """
+        Generates test self signed certificates.
+
+        :return: dictionary with metadata
+        """
         KSEF_SIGN_CERT_PATH = f"{serial_number}-cert.pem"
         KSEF_SIGN_KEY_PATH = f"{serial_number}-privkey.pem"
         KSEF_SIGN_CA_PATH = f"{serial_number}-cert.pem"

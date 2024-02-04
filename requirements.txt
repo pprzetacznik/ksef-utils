@@ -8,3 +8,4 @@ lxml
 pytz
 signxml==3.2.1
 Sphinx
+sphinx_rtd_theme

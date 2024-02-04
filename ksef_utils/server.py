@@ -214,16 +214,17 @@ class KSEFServer:
 
     def post_credentials_grant(self, session_token, onip):
         """
-        # - introspection
-        # - invoice_read
-        # - invoice_write
-        # - payment_confirmation_write
-        # - credentials_read
-        # - credentials_manage
-        # - self_invoicing
-        # - tax_representative
-        # - enforcement_operations
-        # - subunit_manage
+        Possible grants:
+        * introspection
+        * invoice_read
+        * invoice_write
+        * payment_confirmation_write
+        * credentials_read
+        * credentials_manage
+        * self_invoicing
+        * tax_representative
+        * enforcement_operations
+        * subunit_manage
         """
         data = {
             "grantCredentials": {
