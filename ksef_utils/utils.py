@@ -103,10 +103,10 @@ class KSEFUtils:
             print(f"exception: {exception}")
 
         challenge_time_iso = response_json.get("timestamp")
-        challenge_time = iso_to_milliseconds(challenge_time_iso)
+        challenge_time = iso_to_milliseconds(str(challenge_time_iso))
         print("challenge_time:  ", challenge_time)
 
-        encrypted_token = encrypt(public_key, ksef_token, str(challenge_time))
+        encrypted_token = encrypt(public_key, ksef_token, challenge_time)
         return encrypted_token
 
     @staticmethod

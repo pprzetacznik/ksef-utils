@@ -1,0 +1,4 @@
+mypy
+lxml-stubs
+types-requests
+types-pytz

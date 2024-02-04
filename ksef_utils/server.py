@@ -1,3 +1,4 @@
+from typing import Optional
 from time import sleep
 from datetime import datetime
 from json import dumps
@@ -6,8 +7,6 @@ from hashlib import sha256
 import requests
 from ksef_utils.utils import (
     render_template,
-    encrypt,
-    iso_to_milliseconds,
     sign_xml,
     debug_requests,
     KSEFUtils,
@@ -343,7 +342,7 @@ class KSEFServer:
         return response
 
     def post_payment_identifier(
-        self, session_token, ksef_reference_list: list[str]
+        self, session_token, ksef_reference_list: Optional[list[str]]
     ):
         data = {"ksefReferenceNumberList": ksef_reference_list}
         headers = {
@@ -469,13 +468,13 @@ class KSEFService:
         response = self.server.get_invoice(reference_number, self.init_token)
         return response.text
 
-    def get_upo(self, reference_number: str) -> str:
+    def get_upo(self, reference_number: str):
         response = self.server.get_upo(self.init_token, reference_number)
         return response.json()
 
     def wait_until_upo(
-        self, reference_number: str, max_retries: int = 60, interval: str = 2
-    ) -> str:
+        self, reference_number: str, max_retries: int = 60, interval: int = 2
+    ) -> dict:
         processing_code = 310
         while processing_code != 200 and max_retries > 0:
             response = self.get_upo(reference_number)
@@ -505,7 +504,9 @@ class KSEFService:
                 sleep(1)
         return response.json()
 
-    def post_payment_identifier(self, ksef_reference_list: list[str] = None):
+    def post_payment_identifier(
+        self, ksef_reference_list: Optional[list[str]] = None
+    ):
         response = self.server.post_payment_identifier(
             self.init_token, ksef_reference_list
         )
