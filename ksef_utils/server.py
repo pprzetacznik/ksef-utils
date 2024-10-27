@@ -4,7 +4,8 @@ from datetime import datetime
 from json import dumps
 from base64 import b64encode
 from hashlib import sha256
-import requests
+from requests import Session
+from requests.adapters import HTTPAdapter, Retry
 from ksef_utils.utils import (
     render_template,
     sign_xml,
@@ -18,11 +19,21 @@ class KSEFServer:
         self.config = config
         if config.LOGS_VERBOSE:
             debug_requests()
+        retries = Retry(
+            total=10,
+            backoff_factor=5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=frozenset(
+                {"DELETE", "GET", "HEAD", "OPTIONS", "PUT", "TRACE", "POST"}
+            ),
+        )
+        self.session = Session()
+        self.session.mount(self.config.URL, HTTPAdapter(max_retries=retries))
 
     def init_token(self, **kwargs):
         rendered_template = render_template("InitSession.xml", **kwargs)
         print(rendered_template)
-        response = requests.post(
+        response = self.session.post(
             f"{self.config.URL}/api/online/Session/InitToken",
             data=rendered_template,
             headers={
@@ -33,7 +44,7 @@ class KSEFServer:
         return response
 
     def init_signed(self, data):
-        response = requests.post(
+        response = self.session.post(
             f"{self.config.URL}/api/online/Session/InitSigned",
             data=data,
             headers={
@@ -49,7 +60,7 @@ class KSEFServer:
             "SessionToken": session_token,
             "Content-Type": "application/json",
         }
-        response = requests.get(
+        response = self.session.get(
             f"{self.config.URL}/api/online/Session/Status?PageSize=10&PageOffset=0&IncludeDetails=true",
             headers=headers,
         )
@@ -59,7 +70,7 @@ class KSEFServer:
         headers = {
             "accept": "application/json",
         }
-        response = requests.get(
+        response = self.session.get(
             f"{self.config.URL}/api/common/Status/{reference_number}",
             headers=headers,
         )
@@ -72,7 +83,7 @@ class KSEFServer:
                 "identifier": identifier,
             }
         }
-        response = requests.post(
+        response = self.session.post(
             f"{self.config.URL}/api/online/Session/AuthorisationChallenge?PageSize=10&PageOffset=0&IncludeDetails=false",
             json=data,
         )
@@ -81,6 +92,7 @@ class KSEFServer:
         print(dir(response))
         print(response.text)
         print(response.reason)
+        print(response.status_code)
         response_json = response.json()
         return response_json
 
@@ -90,7 +102,7 @@ class KSEFServer:
             "SessionToken": session_token,
             "Content-Type": "application/json",
         }
-        response = requests.get(
+        response = self.session.get(
             f"{self.config.URL}/api/online/Session/Terminate",
             headers=headers,
         )
@@ -123,7 +135,7 @@ class KSEFServer:
             "SessionToken": session_token,
             "Content-Type": "application/json",
         }
-        response = requests.post(
+        response = self.session.post(
             f"{self.config.URL}/api/online/Query/Invoice/Sync?PageSize=10&PageOffset=0",
             json=data,
             headers=headers,
@@ -162,7 +174,7 @@ class KSEFServer:
                 "description": "0_ksef-utils_test_token",
             }
         }
-        response = requests.post(
+        response = self.session.post(
             f"{self.config.URL}/api/online/Credentials/GenerateToken",
             json=data,
             headers={
@@ -185,9 +197,11 @@ class KSEFServer:
             "grantContextCredentials": {
                 "contextIdentifier": {
                     "type": context_identifier_type,
-                    "identifier": context_identifier
-                    if context_identifier
-                    else self.config.KSEF_NIP,
+                    "identifier": (
+                        context_identifier
+                        if context_identifier
+                        else self.config.KSEF_NIP
+                    ),
                 },
                 "credentialsIdentifier": {
                     "type": credentials_identifier_type,
@@ -200,7 +214,7 @@ class KSEFServer:
                 },
             }
         }
-        response = requests.post(
+        response = self.session.post(
             f"{self.config.URL}/api/online/Credentials/ContextGrant",
             json=data,
             headers={
@@ -259,7 +273,7 @@ class KSEFServer:
                 ],
             }
         }
-        response = requests.post(
+        response = self.session.post(
             f"{self.config.URL}/api/online/Credentials/Grant",
             json=data,
             headers={
@@ -278,7 +292,7 @@ class KSEFServer:
         #         "targetIdentifier": "",
         #     }
         # }
-        response = requests.get(
+        response = self.session.get(
             f"{self.config.URL}/api/online/Query/Credential/Context/Sync",
             headers={
                 "Content-Type": "application/json",
@@ -291,7 +305,7 @@ class KSEFServer:
     def get_generate_internal_identifier(
         self, session_token, input_digits_sequence
     ):
-        response = requests.get(
+        response = self.session.get(
             f"{self.config.URL}/api/online/Session/GenerateInternalIdentifier/{input_digits_sequence}",
             headers={
                 "Content-Type": "application/json",
@@ -302,7 +316,7 @@ class KSEFServer:
         return response
 
     def get_token_status(self, session_token, reference_number):
-        response = requests.get(
+        response = self.session.get(
             f"{self.config.URL}/api/online/Credentials/Status/{reference_number}",
             headers={
                 "Content-Type": "application/json",
@@ -319,7 +333,7 @@ class KSEFServer:
             "Content-Type": "application/json",
         }
         url = f"{self.config.URL}/api/online/Invoice/Status/{reference_number}"
-        response = requests.get(url, headers=headers)
+        response = self.session.get(url, headers=headers)
         return response
 
     def get_invoice(self, reference_number: str, session_token: str):
@@ -328,7 +342,7 @@ class KSEFServer:
             "SessionToken": session_token,
         }
         url = f"{self.config.URL}/api/online/Invoice/Get/{reference_number}"
-        response = requests.get(url, headers=headers)
+        response = self.session.get(url, headers=headers)
         return response
 
     def send_invoice(self, data: dict, session_token: str):
@@ -338,7 +352,7 @@ class KSEFServer:
             "SessionToken": session_token,
             "Content-Type": "application/json",
         }
-        response = requests.put(url, data=dumps(data), headers=headers)
+        response = self.session.put(url, data=dumps(data), headers=headers)
         return response
 
     def post_payment_identifier(
@@ -351,7 +365,7 @@ class KSEFServer:
             "Content-Type": "application/json",
         }
         url = f"{self.config.URL}/api/online/Payment/Identifier/Request"
-        response = requests.post(url, json=data, headers=headers)
+        response = self.session.post(url, json=data, headers=headers)
         return response
 
 
@@ -422,7 +436,7 @@ class KSEFService:
             print(dumps(response_json, indent=4))
             if response_json.get("processingCode") == 315:
                 logged = True
-            sleep(1)
+            sleep(2)
         return response_json
 
     def send_invoice(self, **kwargs):
@@ -456,13 +470,11 @@ class KSEFService:
             if not invoice_status.get("ksefReferenceNumber"):
                 invoice_status = {}
             if not invoice_status:
-                sleep(1)
+                sleep(2)
         return response.json()
 
     def get_invoice_status(self, reference_number: str):
-        return self.server.get_invoice_status(
-            reference_number, self.init_token
-        )
+        return self.server.get_invoice_status(reference_number, self.init_token)
 
     def get_invoice(self, reference_number: str) -> str:
         response = self.server.get_invoice(reference_number, self.init_token)
@@ -501,7 +513,7 @@ class KSEFService:
             processing_code = response_status.json().get("processingCode")
             print(dumps(response.json(), indent=4))
             if processing_code != 200:
-                sleep(1)
+                sleep(2)
         return response.json()
 
     def post_payment_identifier(
@@ -513,9 +525,7 @@ class KSEFService:
         return response.json()
 
     def get_invoices(self, from_date=None, to_date=None):
-        response = self.server.get_invoices(
-            self.init_token, from_date, to_date
-        )
+        response = self.server.get_invoices(self.init_token, from_date, to_date)
         return response.json()
 
     def get_status(self):
