@@ -4,14 +4,19 @@ from datetime import datetime
 from json import dumps
 from base64 import b64encode
 from hashlib import sha256
+from logging import getLogger
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
+from ksef_utils import __version__ as version
 from ksef_utils.utils import (
     render_template,
     sign_xml,
-    debug_requests,
     KSEFUtils,
 )
+from ksef_utils.logger import debug_requests
+
+
+logger = getLogger(__name__)
 
 
 class KSEFServer:
@@ -29,6 +34,7 @@ class KSEFServer:
         )
         self.session = Session()
         self.session.mount(self.config.URL, HTTPAdapter(max_retries=retries))
+        self.session.headers.update({"User-Agent": f"ksef-utils: {version}"})
 
     def init_token(self, **kwargs):
         rendered_template = render_template("InitSession.xml", **kwargs)
@@ -424,19 +430,24 @@ class KSEFService:
         self.init_token_all = response.json()
         return response
 
-    def session_terminate(self):
+    def session_terminate(
+        self, max_retries: int = 60, interval: int = 5
+    ) -> dict:
         response = self.server.get_session_terminate(self.init_token)
+        logger.info(f"session_terminate: {dumps(response.json(), indent=4)}")
         return response.json()
 
-    def wait_until_logged(self):
-        logged = False
-        while not logged:
+    def wait_until_logged(self, max_retries: int = 60, interval: int = 5):
+        logged_in = False
+        while not logged_in and max_retries > 0:
+            logger.info(f"Wait until logged in, max_retries={max_retries}")
             response = self.server.get_status(self.init_token)
             response_json = response.json()
             print(dumps(response_json, indent=4))
             if response_json.get("processingCode") == 315:
-                logged = True
-            sleep(2)
+                logged_in = True
+            sleep(interval)
+            max_retries -= 1
         return response_json
 
     def send_invoice(self, **kwargs):
@@ -460,9 +471,12 @@ class KSEFService:
         data = {"invoiceHash": invoice_hash, "invoicePayload": invoice_payload}
         return self.server.send_invoice(data, self.init_token)
 
-    def wait_until_invoice(self, reference_number):
-        invoice_status = {}
-        while not invoice_status:
+    def wait_until_invoice(
+        self, reference_number: str, max_retries: int = 60, interval: int = 5
+    ) -> dict:
+        invoice_status: dict = {}
+        while not invoice_status and max_retries > 0:
+            logger.info(f"Wait until invoice, max_retries={max_retries}")
             response = self.get_invoice_status(reference_number)
             print(response.status_code)
             print(dumps(response.json(), indent=4))
@@ -470,7 +484,8 @@ class KSEFService:
             if not invoice_status.get("ksefReferenceNumber"):
                 invoice_status = {}
             if not invoice_status:
-                sleep(2)
+                sleep(interval)
+            max_retries -= 1
         return response.json()
 
     def get_invoice_status(self, reference_number: str):
@@ -485,10 +500,11 @@ class KSEFService:
         return response.json()
 
     def wait_until_upo(
-        self, reference_number: str, max_retries: int = 60, interval: int = 2
+        self, reference_number: str, max_retries: int = 60, interval: int = 5
     ) -> dict:
         processing_code = 310
         while processing_code != 200 and max_retries > 0:
+            logger.info(f"Wait until upo, max_retries={max_retries}")
             response = self.get_upo(reference_number)
             processing_code = response.get("processingCode")
             print(dumps(response, indent=4))
@@ -501,7 +517,7 @@ class KSEFService:
         response = self.server.generate_token(self.init_token)
         return response.json()
 
-    def wait_until_token(self, element_reference_number):
+    def wait_until_token(self, element_reference_number, interval: int = 5):
         response = self.server.get_token_status(
             self.init_token, element_reference_number
         )
@@ -513,7 +529,7 @@ class KSEFService:
             processing_code = response_status.json().get("processingCode")
             print(dumps(response.json(), indent=4))
             if processing_code != 200:
-                sleep(2)
+                sleep(interval)
         return response.json()
 
     def post_payment_identifier(

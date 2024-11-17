@@ -1,6 +1,7 @@
 from argparse import Namespace, ArgumentParser
 from ksef_utils.utils import KSEFUtils
 from ksef_utils.cli import GenerateCertsCommand
+from ksef_utils.logger import setup_logger
 
 
 class KeyGenHandler:
@@ -46,6 +47,7 @@ def parse_arguments() -> Namespace:
 
 
 def main() -> None:
+    setup_logger()
     args = parse_arguments()
     args.func(args)
 

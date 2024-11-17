@@ -141,6 +141,10 @@ $ git push origin v1.0
 * https://ksef-test.mf.gov.pl/web/
 * https://www.youtube.com/watch?v=dnBGO6IPtzA
 
+## TODO
+
+* Checking if upo can be downloaded after termination of the session
+
 ## Contributing
 
 * https://www.conventionalcommits.org/en/v1.0.0/

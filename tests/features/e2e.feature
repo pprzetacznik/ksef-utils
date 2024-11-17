@@ -19,4 +19,5 @@ Feature: KSeF Web API
         Then grant context
         Then generate new certs
         Then signed in using cert
+        Then terminate session
 
