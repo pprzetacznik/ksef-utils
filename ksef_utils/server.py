@@ -497,17 +497,18 @@ class KSEFService:
 
     def get_upo(self, reference_number: str):
         response = self.server.get_upo(self.init_token, reference_number)
+        print(f"response_upo: {response}")
         return response.json()
 
     def wait_until_upo(
-        self, reference_number: str, max_retries: int = 60, interval: int = 5
+        self, reference_number: str, max_retries: int = 90, interval: int = 20
     ) -> dict:
         processing_code = 310
         while processing_code != 200 and max_retries > 0:
             logger.info(f"Wait until upo, max_retries={max_retries}")
             response = self.get_upo(reference_number)
-            processing_code = response.get("processingCode")
             print(dumps(response, indent=4))
+            processing_code = response.get("processingCode")
             if processing_code != 200:
                 sleep(interval)
             max_retries -= 1
